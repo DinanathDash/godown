@@ -1,112 +1,88 @@
-# Godown
+# Godown Operations ERP
 
-Godown is a modern, monolithic web application built to streamline operations for small-to-medium businesses. It provides a cohesive suite of modules encompassing Role-Based Access Control, Customer CRM, Inventory Management, and Sales Order (Challan) processing.
+This is a Mini Operations ERP built to track inventory across multiple locations, manage work orders, execute stock transfers, and handle customer order reservations.
 
-By deeply linking sales to inventory, Godown ensures stock integrity through transactional guardrails (preventing negative inventory) while providing robust audit logs.
+It provides five key modules:
 
-## Modules Built
-
-1. **Authentication & RBAC**: JWT-based login with distinct roles (ADMIN, SALES, WAREHOUSE, ACCOUNTS).
-2. **Customer CRM**: Manage customer details, business information, and track follow-up dates.
-3. **Products & Inventory**: Manage catalogs, minimum stock alerts, and view immutable stock movement logs.
-4. **Sales Challans**: Draft and confirm delivery notes. Confirmation triggers atomic stock deduction and locks the challan to ensure an immutable historical snapshot. Includes PDF export and print capabilities.
-5. **Dashboard**: A bird's-eye view aggregating metrics from all modules, complete with ECharts-powered visualizations and urgent-action lists.
-
-## Live Links
-
-- **Frontend URL**: [https://godown.dinanath.dev](https://godown.dinanath.dev)
-- **Backend Base URL**: [https://api.godown.dinanath.dev/api](https://api.godown.dinanath.dev/api)
-- **API Health Check**: [https://api.godown.dinanath.dev/api/health](https://api.godown.dinanath.dev/api/health)
-
-_(Note: Render free tier instances spin down after inactivity. Initial API requests may take up to 50 seconds to respond as the instance wakes up)._
-
-## Test Credentials
-
-Use these seeded accounts to log in and explore role-based restrictions. **Password for all accounts is `Password@123`.**
-
-| Role      | Email                          |
-| --------- | ------------------------------ |
-| Admin     | `aarti.admin@godown.test`      |
-| Sales     | `nikhil.sales@godown.test`     |
-| Warehouse | `suresh.warehouse@godown.test` |
-| Accounts  | `meera.accounts@godown.test`   |
-
-## Tech Stack
-
-- **Frontend**: Next.js 14 (App Router), React, Tailwind CSS, Shadcn/UI, React-Hook-Form, Zod, Zustand, React-Query, ECharts, jsPDF.
-- **Backend**: Node.js, Express, TypeScript, Zod, Prisma ORM, Configurable Seeder.
-- **Database**: PostgreSQL (Neon Serverless).
-- **Tooling**: Vitest, Supertest, ESLint, Prettier.
-
-_Why this stack?_ The combination of TypeScript across the stack with Zod validations ensures end-to-end type safety. Prisma provides a fantastic developer experience for PostgreSQL, and Next.js + Shadcn/UI allows for incredibly fast, accessible, and beautiful frontend development.
+1. **Auth & RBAC**: Secure login with Role-Based Access Control (Admin, Operations, Sales).
+2. **Inventory**: Real-time stock tracking at the `Item × Location × Batch` grain.
+3. **Work Orders**: Task assignment with real-time stock shortage calculations.
+4. **Stock Transfers**: Multi-state internal transfers (Requested → Dispatched → Received).
+5. **Customer Orders**: Sales order creation with robust concurrent stock reservations.
 
 ## Documentation
 
-For a deeper dive into the system:
+- **Architecture**: See [`docs/architecture.md`](./docs/architecture.md) for details on the architecture, request flow, and business invariants.
+- **Deployment**: See [`docs/deployment.md`](./docs/deployment.md) for step-by-step instructions on deploying the application.
+- **API Reference**: Import the [`docs/postman_collection.json`](./docs/postman_collection.json) file into Postman or Insomnia to explore the API endpoints.
 
-- [Architecture & Schema Design](docs/architecture.md)
-- [Deployment Guide](docs/deployment.md)
-- [Postman API Collection](docs/postman_collection.json)
+## Test Credentials
+
+| Role       | Email            | Password       |
+| ---------- | ---------------- | -------------- |
+| Admin      | `admin@erp.test` | `Password@123` |
+| Operations | `ops@erp.test`   | `Password@123` |
+| Sales      | `sales@erp.test` | `Password@123` |
+
+## Tech Stack
+
+- **Backend**: Node.js, Express, TypeScript, Prisma ORM
+- **Database**: PostgreSQL
+- **Frontend**: Next.js (App Router), TailwindCSS, TanStack Query
 
 ## Local Setup
 
-1. **Clone the repository**:
-
+1. Clone the repository.
+2. Ensure PostgreSQL 16+ is running locally or use a remote Database URL.
+3. In `backend/`:
    ```bash
-   git clone <repo-url>
-   cd godown
-   ```
-
-2. **Backend Setup**:
-
-   ```bash
-   cd backend
    npm install
-   # Create a .env file and add your DATABASE_URL and JWT_SECRET
-   npx prisma migrate dev
+   cp .env.example .env  # Edit DATABASE_URL and JWT_SECRET
+   npx prisma db push
    npm run seed
    npm run dev
    ```
-
-3. **Frontend Setup**:
+4. In `frontend/`:
    ```bash
-   cd ../frontend
    npm install
-   # Create a .env.local and add NEXT_PUBLIC_API_URL=http://localhost:4000/api
+   cp .env.example .env.local
    npm run dev
    ```
 
 ## Environment Variables
 
-### Backend (`backend/.env`)
+| Variable         | Purpose                        | Example                                          |
+| ---------------- | ------------------------------ | ------------------------------------------------ |
+| `NODE_ENV`       | Environment context            | `development`                                    |
+| `PORT`           | API listen port                | `4000`                                           |
+| `DATABASE_URL`   | Postgres connection string     | `postgresql://user:pass@host/db?sslmode=require` |
+| `JWT_SECRET`     | Secret for signing auth tokens | `super-secret-key-change-me`                     |
+| `JWT_EXPIRES_IN` | Token validity duration        | `12h`                                            |
+| `CORS_ORIGINS`   | Allowed frontend domains       | `http://localhost:3000`                          |
+| `LOG_LEVEL`      | Pino logger verbosity          | `info`                                           |
 
-| Variable       | Purpose                      | Example                        |
-| -------------- | ---------------------------- | ------------------------------ |
-| `PORT`         | API port                     | `4000`                         |
-| `NODE_ENV`     | Environment context          | `development`                  |
-| `DATABASE_URL` | PostgreSQL connection string | `postgres://user:pass@host/db` |
-| `JWT_SECRET`   | Secret for signing tokens    | `supersecretkey`               |
-| `CORS_ORIGIN`  | Allowed frontend origin      | `http://localhost:3000`        |
+## Testing
 
-### Frontend (`frontend/.env.local`)
+Run the integration test suite in the `backend/` directory:
 
-| Variable              | Purpose              | Example                     |
-| --------------------- | -------------------- | --------------------------- |
-| `NEXT_PUBLIC_API_URL` | Backend API base URL | `http://localhost:4000/api` |
+```bash
+npm run test
+```
 
-## Business Rules
+### What the tests prove:
 
-- **Challan Numbering**: Auto-generated in the format `CHL-YYYY-XXXXX`.
-- **Stock Deduction**: Triggered _only_ when a Draft Challan is confirmed.
-- **Negative-Stock Prevention**: The API explicitly blocks confirming a challan if it exceeds current stock levels, returning a 409 Conflict.
-- **Snapshots**: When a challan is created, the customer details and product names/prices are deeply cloned into the challan record. If the customer changes their name or a product price increases months later, the historical challan remains perfectly intact.
-- **Status Transitions**: DRAFT -> CONFIRMED. Once CONFIRMED, it cannot go back to DRAFT. It can only go to CANCELLED (which restores stock).
+1. **Cannot reserve more than available**: Returns 409 `INSUFFICIENT_AVAILABLE`.
+2. **Cannot transfer more than available**: Returns 409, source `physicalQty` unchanged.
+3. **Destination increases only after receipt**: After dispatch, destination is unchanged. After receipt, destination goes up.
+4. **Same transfer cannot be received twice**: Second receive attempt hits a conditional write guard and returns 409.
+5. **Unauthorized action prevention**: Verifies RBAC (Sales cannot create Work Orders, Ops cannot reserve orders).
+6. **Concurrency Guard**: Fires two overlapping reservations for stock. `SELECT ... FOR UPDATE` guarantees exactly one wins and inventory is never oversold.
 
-## Known Limitations
+## Assumptions & Limitations
 
-- Tokens are stored in `localStorage` without HttpOnly cookies.
-- No Refresh-Token rotation is implemented.
-- The UI does not support restoring soft-deleted records (must be done via raw DB).
-- No audit trail for entity changes outside of Inventory Stock Movements.
-- Assumes INR currency and single company tenant.
-- Currently the UI does not support mobile view, for better exprience use desktop only.
+- Single tenant architecture.
+- Base currency is INR.
+- Quantities are strictly integers ≥ 1.
+- No partial dispatch of transfers.
+- No refresh-token rotation (JWT is long-lived).
+- Tokens stored in `localStorage` (vulnerable to XSS).

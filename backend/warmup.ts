@@ -10,8 +10,8 @@ async function main() {
       console.log('DB connected and warmed up!');
       process.exit(0);
     } catch (e: any) {
-      console.log(\`Retry \${i + 1} failed: \${e.message}\`);
-      await new Promise(r => setTimeout(r, 2000));
+      console.log(`Retry ${i + 1} failed: ${e.message}`);
+      await new Promise((r) => setTimeout(r, 2000));
     }
   }
   console.log('Could not connect to DB after 15 attempts.');

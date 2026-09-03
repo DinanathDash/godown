@@ -1,56 +1,44 @@
 # Deployment Guide
 
-Godown is designed to be deployed with the Backend hosted on **Render** (as a Web Service) and the Frontend hosted on **Vercel**.
+Godown can be deployed on any standard Node.js hosting platform (Backend) and static site host (Frontend).
 
 ## 1. Prerequisites
 
-- A PostgreSQL database (e.g., Neon, Supabase, or AWS RDS).
-- A GitHub repository containing the Godown source code.
-- Accounts on Render and Vercel.
+- A PostgreSQL database (e.g., Neon, AWS RDS).
+- A Node.js environment (v20+).
 
-## 2. Backend Deployment (Render)
+## 2. Backend Deployment
 
-1. Log into [Render](https://render.com/).
-2. Click **New +** and select **Web Service**.
-3. Connect your GitHub repository.
-4. Configure the service:
-   - **Name**: `godown-api`
-   - **Root Directory**: `backend`
-   - **Environment**: `Node`
-   - **Build Command**: `npm install --include=dev && npm run build && npx prisma generate && npx prisma migrate deploy && npx prisma db seed`
-   - **Start Command**: `npm start`
-5. Configure Environment Variables (under the "Environment" tab):
+1. Set up a Node.js server or a PaaS (like Heroku or Render).
+2. Set the following environment variables:
    - `DATABASE_URL`: Your PostgreSQL connection string.
-   - `JWT_SECRET`: A strong, random string (e.g., generated via `openssl rand -base64 32`).
-   - `PORT`: `10000` (Render's default)
+   - `JWT_SECRET`: A strong, random string.
    - `NODE_ENV`: `production`
-6. Click **Create Web Service**.
-7. Wait for the build to complete and note down the provided `onrender.com` URL.
-
-_(Note: The build command above automatically runs database migrations and seeds the initial data so you do not need shell access!)_
+   - `PORT`: e.g. `4000`
+3. Run the deployment commands:
+   ```bash
+   npm install --include=dev
+   npm run build
+   npx prisma generate
+   npx prisma migrate deploy
+   npx prisma db seed
+   npm start
+   ```
 
 ## 3. Frontend Deployment (Vercel)
 
 1. Log into [Vercel](https://vercel.com/).
-2. Click **Add New...** and select **Project**.
-3. Import your GitHub repository.
-4. Configure the project:
-   - **Project Name**: `godown`
-   - **Framework Preset**: `Next.js`
+2. Import the GitHub repository.
+3. Configure the project:
    - **Root Directory**: `frontend`
    - **Build Command**: `npm run build`
-   - **Output Directory**: `.next`
-5. Configure Environment Variables:
-   - `NEXT_PUBLIC_API_URL`: The URL of your Render backend (e.g., `https://godown-api.onrender.com/api`).
-6. Click **Deploy**.
-7. Vercel will automatically build and assign a `.vercel.app` domain.
+4. Configure Environment Variables:
+   - `NEXT_PUBLIC_API_URL`: The URL of your backend (e.g., `https://api.godown.com/api`).
+5. Click **Deploy**.
 
-## 4. Final Configuration (CORS)
+## 4. CORS Configuration
 
-Once you have your Vercel frontend URL:
+Once the frontend is deployed:
 
-1. Go back to your Render Backend environment variables.
-2. Add a new variable: `CORS_ORIGIN` = `https://your-vercel-app-url.vercel.app`.
-3. Restart the Render Web Service to apply the new CORS policy.
-
-You can now log in using the seed accounts provided in the README!
+1. Update the backend `CORS_ORIGIN` environment variable to include the frontend URL.
+2. Restart the backend service.

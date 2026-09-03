@@ -5,7 +5,7 @@ Godown is a full-stack monolithic web application divided into a Node.js Express
 ## Tech Stack
 
 - **Backend:** Node.js, Express, TypeScript, Zod (validation), Prisma ORM
-- **Frontend:** Next.js (App Router), React, Tailwind CSS, Shadcn/UI (Radix UI primitives)
+- **Frontend:** Next.js (App Router), React, Tailwind CSS, Shadcn/UI
 - **Database:** PostgreSQL (Neon Serverless)
 - **Tooling:** Vite/Vitest for unit testing, ESLint, Prettier
 
@@ -17,49 +17,39 @@ The backend follows a classic 3-tier Controller-Service-Repository architecture.
 
 1. **Route Layer (`/routes`)**: Defines API endpoints and binds them to specific controllers. Applies authentication (`authenticate`) and authorization (`requireRole`) middleware.
 2. **Controller Layer (`/controllers`)**: Handles HTTP concerns. Extracts parameters, bodies, and queries, parses them through Zod schemas, invokes the Service layer, and formats the HTTP response envelope.
-3. **Service Layer (`/services`)**: Contains core business logic. Responsible for orchestrating multiple database calls, enforcing invariants (e.g., preventing negative stock), and throwing `AppError` instances if business rules are violated.
+3. **Service Layer (`/services`)**: Contains core business logic. Responsible for orchestrating multiple database calls, enforcing invariants (e.g., preventing overselling), and throwing `AppError` instances if business rules are violated.
 4. **Data Layer (`Prisma`)**: Interacts directly with the PostgreSQL database.
 
 ### Core Modules
 
 - **Auth**: Manages JWT generation, bcrypt password hashing, and user sessions.
-- **Customers**: Manages the CRM data, follow-ups, and soft-deletion.
-- **Products**: Manages inventory catalog, minimum stock thresholds, and stock movement logs.
-- **Challans**: The most complex module. Manages the lifecycle of sales challans (Draft -> Confirmed -> Cancelled) and orchestrates atomic transactions to deduct stock in the Product module.
-- **Dashboard**: A read-only aggregation module that pulls metrics from all other modules for the frontend.
+- **Inventory**: Tracks real-time stock at the `Item × Location × Batch` grain, along with manual adjustments.
+- **Work Orders**: Task assignment with real-time stock shortage calculations.
+- **Transfers**: Internal stock movements with state transitions (Requested → Dispatched → Received).
+- **Orders**: Sales orders managing concurrent stock reservations and cancellations.
 
-## Database Schema (ER Diagram)
+## Database Schema
 
-The database consists of 6 primary tables:
+The database relies on strict row-level tracking and transaction management:
 
-1. **User**: Stores employee credentials and their RBAC `Role` (ADMIN, SALES, WAREHOUSE, ACCOUNTS).
-2. **Customer**: Stores client business details, contact information, and CRM follow-up dates.
-3. **Product**: Stores inventory items, SKUs, pricing, current stock levels, and minimum stock alerts.
-4. **StockMovement**: An append-only audit log tracking every `IN` and `OUT` adjustment to a product's stock, linked to the `User` who made the change.
-5. **Challan**: Represents a sales order or delivery note. Belongs to a `Customer`. Tracks status (`DRAFT`, `CONFIRMED`, `CANCELLED`).
-6. **ChallanItem**: Line items for a Challan. Stores the exact quantity and unit price at the time of creation to serve as an immutable snapshot.
-
-### Key Relationships
-
-- `Customer` (1) to `Challan` (N)
-- `Challan` (1) to `ChallanItem` (N)
-- `Product` (1) to `ChallanItem` (N)
-- `Product` (1) to `StockMovement` (N)
-- `User` (1) to `StockMovement` (N)
+1. **User, Location, Category, Item, Batch**: Master data tables.
+2. **InventoryItem**: Tracks physical and reserved quantities per item/location/batch.
+3. **StockMovement**: Append-only ledger of stock changes (`IN`/`OUT`).
+4. **StockTransfer**: Tracks transit of items between locations.
+5. **WorkOrder**: Tracks required quantity against available quantity at a location.
+6. **CustomerOrder & CustomerOrderLine**: Sales orders.
+7. **StockReservation**: The precise ledger of reserved quantities linking an order line to an inventory row.
 
 ## Frontend Architecture
 
-The frontend is built using **Next.js App Router** but heavily leans into Client Components (`"use client"`) for interactivity, behaving largely like a Single Page Application (SPA).
-
-- **API Client**: Uses `axios` wrapped with interceptors to automatically inject the JWT token from Zustand into every request.
+- **API Client**: Uses `axios` wrapped with interceptors for JWT injection.
 - **State Management**:
-  - `Zustand` is used for global client-side state (User Auth context).
-  - `@tanstack/react-query` is used for server-state caching, fetching, and optimistic UI updates.
-- **Styling**: Tailwind CSS combined with `shadcn/ui` for accessible, unstyled Radix UI primitives.
-- **Forms**: `react-hook-form` paired with `@hookform/resolvers/zod` for robust client-side validation mirroring the backend schemas.
+  - `Zustand` for global client-side state (User Auth context).
+  - `@tanstack/react-query` for server-state caching and fetching.
+- **Forms**: `react-hook-form` + `zod` for robust client-side validation mirroring the backend schemas.
 
 ## Business Rules & Invariants
 
-1. **Stock Deduction**: Stock is only deducted when a Challan transitions from `DRAFT` to `CONFIRMED`.
-2. **Negative Stock Prevention**: A challan cannot be confirmed if any of its line items exceed the current available stock of that product.
-3. **Immutability**: Once a Challan is confirmed, it cannot be edited. It can only be cancelled, which reverses the stock deduction via new `IN` stock movements.
+1. **Available Quantity**: Computed as `physicalQty - reservedQty` dynamically. It is never stored to prevent drift.
+2. **Reservation Concurrency**: Handled via `SELECT ... FOR UPDATE` row locks, ensuring exactly one transaction succeeds when competing for identical stock.
+3. **Transfer Receipt Idempotency**: Status transitions use conditional writes to guarantee a transfer cannot be received twice.

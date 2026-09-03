@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Godown API",
-    "description": "API collection for Godown ERP",
+    "description": "API collection for Godown Operations ERP",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -9,7 +9,7 @@
       "name": "Auth",
       "item": [
         {
-          "name": "Login Admin",
+          "name": "Login",
           "event": [
             {
               "listen": "test",
@@ -26,10 +26,9 @@
           ],
           "request": {
             "method": "POST",
-            "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"email\": \"aarti.admin@godown.test\",\n    \"password\": \"Password@123\"\n}",
+              "raw": "{\n    \"email\": \"admin@erp.test\",\n    \"password\": \"Password@123\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -44,7 +43,7 @@
           }
         },
         {
-          "name": "Get Current User (Me)",
+          "name": "Get Current User",
           "request": {
             "auth": {
               "type": "bearer",
@@ -57,7 +56,6 @@
               ]
             },
             "method": "GET",
-            "header": [],
             "url": {
               "raw": "{{baseUrl}}/auth/me",
               "host": ["{{baseUrl}}"],
@@ -68,10 +66,10 @@
       ]
     },
     {
-      "name": "Customers",
+      "name": "Inventory",
       "item": [
         {
-          "name": "Get Customers",
+          "name": "Get Inventory",
           "request": {
             "auth": {
               "type": "bearer",
@@ -84,31 +82,20 @@
               ]
             },
             "method": "GET",
-            "header": [],
             "url": {
-              "raw": "{{baseUrl}}/customers?page=1&limit=10",
+              "raw": "{{baseUrl}}/inventory",
               "host": ["{{baseUrl}}"],
-              "path": ["customers"],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "10"
-                }
-              ]
+              "path": ["inventory"]
             }
           }
         }
       ]
     },
     {
-      "name": "Products & Inventory",
+      "name": "Work Orders",
       "item": [
         {
-          "name": "Get Products",
+          "name": "Get Work Orders",
           "request": {
             "auth": {
               "type": "bearer",
@@ -121,21 +108,20 @@
               ]
             },
             "method": "GET",
-            "header": [],
             "url": {
-              "raw": "{{baseUrl}}/products",
+              "raw": "{{baseUrl}}/work-orders",
               "host": ["{{baseUrl}}"],
-              "path": ["products"]
+              "path": ["work-orders"]
             }
           }
         }
       ]
     },
     {
-      "name": "Challans",
+      "name": "Transfers",
       "item": [
         {
-          "name": "Get Challans",
+          "name": "Get Transfers",
           "request": {
             "auth": {
               "type": "bearer",
@@ -148,11 +134,36 @@
               ]
             },
             "method": "GET",
-            "header": [],
             "url": {
-              "raw": "{{baseUrl}}/challans",
+              "raw": "{{baseUrl}}/transfers",
               "host": ["{{baseUrl}}"],
-              "path": ["challans"]
+              "path": ["transfers"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Get Orders",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders"]
             }
           }
         }
