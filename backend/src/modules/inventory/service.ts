@@ -2,7 +2,12 @@ import { prisma } from '../../lib/prisma';
 import { AppError } from '../../utils/AppError';
 import { Prisma } from '@prisma/client';
 
-export const getInventory = async (filters: { locationId?: string; itemId?: string; page: number; limit: number }) => {
+export const getInventory = async (filters: {
+  locationId?: string;
+  itemId?: string;
+  page: number;
+  limit: number;
+}) => {
   const { locationId, itemId, page, limit } = filters;
 
   const where: Prisma.InventoryItemWhereInput = {
@@ -41,7 +46,7 @@ export const getInventory = async (filters: { locationId?: string; itemId?: stri
 
 export const adjustStock = async (
   userId: string,
-  data: { inventoryItemId: string; type: 'IN' | 'OUT'; quantity: number; reason: string }
+  data: { inventoryItemId: string; type: 'IN' | 'OUT'; quantity: number; reason: string },
 ) => {
   return await prisma.$transaction(async (tx) => {
     const item = await tx.inventoryItem.findUnique({
@@ -55,14 +60,19 @@ export const adjustStock = async (
     if (data.type === 'OUT') {
       const available = item.physicalQty - item.reservedQty;
       if (available < data.quantity) {
-        throw new AppError(400, 'BAD_REQUEST', `Insufficient available stock. Have ${available}, tried to deduct ${data.quantity}`);
+        throw new AppError(
+          400,
+          'BAD_REQUEST',
+          `Insufficient available stock. Have ${available}, tried to deduct ${data.quantity}`,
+        );
       }
     }
 
     const updated = await tx.inventoryItem.update({
       where: { id: item.id },
       data: {
-        physicalQty: data.type === 'IN' ? { increment: data.quantity } : { decrement: data.quantity },
+        physicalQty:
+          data.type === 'IN' ? { increment: data.quantity } : { decrement: data.quantity },
       },
     });
 

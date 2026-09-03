@@ -33,7 +33,13 @@ describe('Stock Reservation Engine', () => {
     });
 
     await prisma.user.create({
-      data: { id: userId, email: 'test@godown.app', passwordHash: 'hash', name: 'Test User', role: 'ADMIN' },
+      data: {
+        id: userId,
+        email: 'test@godown.app',
+        passwordHash: 'hash',
+        name: 'Test User',
+        role: 'ADMIN',
+      },
     });
 
     // Create an inventory item with exactly 7 items
@@ -62,7 +68,7 @@ describe('Stock Reservation Engine', () => {
   it('should handle concurrent reservations correctly', async () => {
     // We have 7 available. We fire 10 concurrent requests of 1 qty each.
     // Exactly 7 should succeed, 3 should fail.
-    
+
     const attempts = Array.from({ length: 10 }).map(() => {
       const orderLineId = randomUUID();
       return prisma.$transaction(async (tx) => {
@@ -71,7 +77,7 @@ describe('Stock Reservation Engine', () => {
     });
 
     const results = await Promise.allSettled(attempts);
-    
+
     const fulfilled = results.filter((r) => r.status === 'fulfilled');
     const rejected = results.filter((r) => r.status === 'rejected');
 
@@ -90,7 +96,7 @@ describe('Stock Reservation Engine', () => {
     const reservations = await prisma.stockReservation.count({
       where: { inventoryItem: { itemId, locationId } },
     });
-    
+
     expect(reservations).toBe(7);
   });
 });

@@ -15,14 +15,14 @@ router.get(
   '/',
   requireRole('ADMIN', 'OPERATIONS', 'SALES'),
   validate(z.object({ query: getInventoryQuerySchema })),
-  getInventory
+  getInventory,
 );
 
 router.post(
   '/adjust',
   requireRole('ADMIN', 'OPERATIONS'),
   validate(z.object({ body: adjustStockSchema })),
-  adjustStock
+  adjustStock,
 );
 
 export default router;

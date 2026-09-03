@@ -1,11 +1,7 @@
 import { Router } from 'express';
 import { requireRole } from '../../middleware/requireRole';
 import { validate } from '../../middleware/validate';
-import {
-  listTransfersSchema,
-  createTransferSchema,
-  transferIdSchema,
-} from './schema';
+import { listTransfersSchema, createTransferSchema, transferIdSchema } from './schema';
 import {
   getTransfersHandler,
   createTransferHandler,

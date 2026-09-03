@@ -3,7 +3,9 @@ import * as InventoryService from './service';
 import { AppError } from '../../utils/AppError';
 
 export const getInventory = async (req: Request, res: Response) => {
-  const result = await InventoryService.getInventory(req.query as unknown as Parameters<typeof InventoryService.getInventory>[0]);
+  const result = await InventoryService.getInventory(
+    req.query as unknown as Parameters<typeof InventoryService.getInventory>[0],
+  );
   res.json(result);
 };
 

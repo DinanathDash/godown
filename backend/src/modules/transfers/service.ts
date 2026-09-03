@@ -51,10 +51,14 @@ export async function createTransfer(
     sourceLocationId: string;
     destinationLocationId: string;
     quantity: number;
-  }
+  },
 ) {
   if (data.sourceLocationId === data.destinationLocationId) {
-    throw new AppError(400, 'INVALID_TRANSFER', 'Source and destination locations cannot be the same');
+    throw new AppError(
+      400,
+      'INVALID_TRANSFER',
+      'Source and destination locations cannot be the same',
+    );
   }
 
   return prisma.$transaction(async (tx) => {
@@ -228,7 +232,11 @@ export async function cancelTransfer(transferId: string) {
     });
 
     if (claimed.count === 0) {
-      throw new AppError(409, 'INVALID_STATUS_TRANSITION', 'Only REQUESTED transfers can be cancelled');
+      throw new AppError(
+        409,
+        'INVALID_STATUS_TRANSITION',
+        'Only REQUESTED transfers can be cancelled',
+      );
     }
 
     return tx.stockTransfer.findUnique({

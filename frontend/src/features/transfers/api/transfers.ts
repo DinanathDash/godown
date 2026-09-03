@@ -1,7 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/api/client';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "@/api/client";
 
-export type TransferStatus = 'REQUESTED' | 'DISPATCHED' | 'RECEIVED' | 'CANCELLED';
+export type TransferStatus =
+  "REQUESTED" | "DISPATCHED" | "RECEIVED" | "CANCELLED";
 
 export interface Transfer {
   id: string;
@@ -24,11 +25,23 @@ export interface Transfer {
   destination: { id: string; name: string; code: string };
 }
 
-export function useTransfers(params: { page?: number; limit?: number; status?: TransferStatus }) {
+export function useTransfers(params: {
+  page?: number;
+  limit?: number;
+  status?: TransferStatus;
+}) {
   return useQuery({
-    queryKey: ['transfers', params],
+    queryKey: ["transfers", params],
     queryFn: async () => {
-      const res = await apiClient.get<{ data: Transfer[]; meta: { page: number; limit: number; total: number; totalPages: number } }>('/transfers', { params });
+      const res = await apiClient.get<{
+        data: Transfer[];
+        meta: {
+          page: number;
+          limit: number;
+          total: number;
+          totalPages: number;
+        };
+      }>("/transfers", { params });
       return res.data;
     },
   });
@@ -44,11 +57,11 @@ export function useCreateTransfer() {
       destinationLocationId: string;
       quantity: number;
     }) => {
-      const res = await apiClient.post('/transfers', data);
+      const res = await apiClient.post("/transfers", data);
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transfers'] });
+      queryClient.invalidateQueries({ queryKey: ["transfers"] });
     },
   });
 }
@@ -61,8 +74,8 @@ export function useDispatchTransfer() {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transfers'] });
-      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      queryClient.invalidateQueries({ queryKey: ["transfers"] });
+      queryClient.invalidateQueries({ queryKey: ["inventory"] });
     },
   });
 }
@@ -75,8 +88,8 @@ export function useReceiveTransfer() {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transfers'] });
-      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      queryClient.invalidateQueries({ queryKey: ["transfers"] });
+      queryClient.invalidateQueries({ queryKey: ["inventory"] });
     },
   });
 }
@@ -89,16 +102,18 @@ export function useCancelTransfer() {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transfers'] });
+      queryClient.invalidateQueries({ queryKey: ["transfers"] });
     },
   });
 }
 
 export function useLocations() {
   return useQuery({
-    queryKey: ['locations'],
+    queryKey: ["locations"],
     queryFn: async () => {
-      const res = await apiClient.get<{ data: { id: string; name: string; code: string }[] }>('/locations');
+      const res = await apiClient.get<{
+        data: { id: string; name: string; code: string }[];
+      }>("/locations");
       return res.data.data;
     },
   });
@@ -106,9 +121,11 @@ export function useLocations() {
 
 export function useItems() {
   return useQuery({
-    queryKey: ['items'],
+    queryKey: ["items"],
     queryFn: async () => {
-      const res = await apiClient.get<{ data: { id: string; name: string; sku: string }[] }>('/items');
+      const res = await apiClient.get<{
+        data: { id: string; name: string; sku: string }[];
+      }>("/items");
       return res.data.data;
     },
   });
@@ -116,9 +133,11 @@ export function useItems() {
 
 export function useBatches() {
   return useQuery({
-    queryKey: ['batches'],
+    queryKey: ["batches"],
     queryFn: async () => {
-      const res = await apiClient.get<{ data: { id: string; code: string; itemId: string }[] }>('/batches');
+      const res = await apiClient.get<{
+        data: { id: string; code: string; itemId: string }[];
+      }>("/batches");
       return res.data.data;
     },
   });

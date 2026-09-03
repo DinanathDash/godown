@@ -26,15 +26,43 @@ async function main() {
   const passwordHash = await bcrypt.hash(DEFAULT_PASSWORD, 10);
 
   console.log('Seeding Locations...');
-  const locMum = await prisma.location.create({ data: { code: 'WH-MUM', name: 'Mumbai Warehouse' } });
+  const locMum = await prisma.location.create({
+    data: { code: 'WH-MUM', name: 'Mumbai Warehouse' },
+  });
   const locPun = await prisma.location.create({ data: { code: 'WH-PUN', name: 'Pune Warehouse' } });
-  const locDel = await prisma.location.create({ data: { code: 'WH-DEL', name: 'Delhi Warehouse' } });
+  const locDel = await prisma.location.create({
+    data: { code: 'WH-DEL', name: 'Delhi Warehouse' },
+  });
   const locations = [locMum, locPun, locDel];
 
   console.log('Seeding Users...');
-  await prisma.user.create({ data: { name: 'Aarti Deshpande', email: 'aarti.admin@godown.test', passwordHash, role: 'ADMIN', locationId: locMum.id } });
-  const sales = await prisma.user.create({ data: { name: 'Nikhil Verma', email: 'nikhil.sales@godown.test', passwordHash, role: 'SALES', locationId: locMum.id } });
-  const ops = await prisma.user.create({ data: { name: 'Suresh Pawar', email: 'suresh.warehouse@godown.test', passwordHash, role: 'OPERATIONS', locationId: locMum.id } });
+  await prisma.user.create({
+    data: {
+      name: 'Aarti Deshpande',
+      email: 'aarti.admin@godown.test',
+      passwordHash,
+      role: 'ADMIN',
+      locationId: locMum.id,
+    },
+  });
+  const sales = await prisma.user.create({
+    data: {
+      name: 'Nikhil Verma',
+      email: 'nikhil.sales@godown.test',
+      passwordHash,
+      role: 'SALES',
+      locationId: locMum.id,
+    },
+  });
+  const ops = await prisma.user.create({
+    data: {
+      name: 'Suresh Pawar',
+      email: 'suresh.warehouse@godown.test',
+      passwordHash,
+      role: 'OPERATIONS',
+      locationId: locMum.id,
+    },
+  });
 
   console.log('Seeding Categories...');
   const catHw = await prisma.category.create({ data: { name: 'Hardware' } });
@@ -83,7 +111,7 @@ async function main() {
           locationId: loc.id,
           batchId: batch.id,
           physicalQty,
-        }
+        },
       });
       // Add opening stock movement
       await prisma.stockMovement.create({
@@ -94,7 +122,7 @@ async function main() {
           balanceAfter: physicalQty,
           reason: 'OPENING_STOCK',
           createdById: ops.id,
-        }
+        },
       });
     }
   }
@@ -108,7 +136,7 @@ async function main() {
         businessName: `Business ${i} Ltd`,
         mobile: `987654321${i % 10}`,
         email: `customer${i}@example.com`,
-      }
+      },
     });
     customers.push(cust);
   }
@@ -127,28 +155,28 @@ async function main() {
           {
             itemId: allItems[0].id,
             quantity: 10,
-          }
-        ]
-      }
+          },
+        ],
+      },
     },
-    include: { lines: true }
+    include: { lines: true },
   });
 
   const line = order.lines[0];
   const invToReserve = await prisma.inventoryItem.findFirst({
-    where: { itemId: line.itemId, locationId: locMum.id }
+    where: { itemId: line.itemId, locationId: locMum.id },
   });
   if (invToReserve) {
     await prisma.inventoryItem.update({
       where: { id: invToReserve.id },
-      data: { reservedQty: 10 }
+      data: { reservedQty: 10 },
     });
     await prisma.stockReservation.create({
       data: {
         orderLineId: line.id,
         inventoryItemId: invToReserve.id,
-        quantity: 10
-      }
+        quantity: 10,
+      },
     });
   }
 
@@ -160,8 +188,8 @@ async function main() {
       itemId: allItems[1].id,
       requiredQty: 50,
       assignedToId: ops.id,
-      status: 'ASSIGNED'
-    }
+      status: 'ASSIGNED',
+    },
   });
 
   await prisma.workOrder.create({
@@ -171,8 +199,8 @@ async function main() {
       itemId: allItems[2].id,
       requiredQty: 10000, // Shortage
       assignedToId: ops.id,
-      status: 'ASSIGNED'
-    }
+      status: 'ASSIGNED',
+    },
   });
 
   console.log('Seeding Transfers...');
@@ -188,15 +216,17 @@ async function main() {
         destinationLocationId: locPun.id,
         quantity: 20,
         requestedById: ops.id,
-        status: 'REQUESTED'
-      }
+        status: 'REQUESTED',
+      },
     });
   }
 
   // Dispatched
   const batch2 = await prisma.batch.findFirst({ where: { itemId: allItems[4].id } });
   if (batch2) {
-    const invSrc = await prisma.inventoryItem.findFirst({ where: { itemId: allItems[4].id, locationId: locMum.id, batchId: batch2.id }});
+    const invSrc = await prisma.inventoryItem.findFirst({
+      where: { itemId: allItems[4].id, locationId: locMum.id, batchId: batch2.id },
+    });
     if (invSrc) {
       await prisma.stockTransfer.create({
         data: {
@@ -209,12 +239,12 @@ async function main() {
           dispatchedQty: 30,
           requestedById: ops.id,
           status: 'DISPATCHED',
-          dispatchedAt: new Date()
-        }
+          dispatchedAt: new Date(),
+        },
       });
       await prisma.inventoryItem.update({
         where: { id: invSrc.id },
-        data: { physicalQty: { decrement: 30 } }
+        data: { physicalQty: { decrement: 30 } },
       });
       await prisma.stockMovement.create({
         data: {
@@ -224,7 +254,7 @@ async function main() {
           balanceAfter: invSrc.physicalQty - 30,
           reason: 'TRANSFER_OUT',
           createdById: ops.id,
-        }
+        },
       });
     }
   }
@@ -232,7 +262,9 @@ async function main() {
   // Received
   const batch3 = await prisma.batch.findFirst({ where: { itemId: allItems[5].id } });
   if (batch3) {
-    const invDest = await prisma.inventoryItem.findFirst({ where: { itemId: allItems[5].id, locationId: locPun.id, batchId: batch3.id }});
+    const invDest = await prisma.inventoryItem.findFirst({
+      where: { itemId: allItems[5].id, locationId: locPun.id, batchId: batch3.id },
+    });
     if (invDest) {
       await prisma.stockTransfer.create({
         data: {
@@ -247,13 +279,13 @@ async function main() {
           requestedById: ops.id,
           status: 'RECEIVED',
           dispatchedAt: new Date(),
-          receivedAt: new Date()
-        }
+          receivedAt: new Date(),
+        },
       });
       // Assuming it was already decremented from source and now we increment destination
       await prisma.inventoryItem.update({
         where: { id: invDest.id },
-        data: { physicalQty: { increment: 40 } }
+        data: { physicalQty: { increment: 40 } },
       });
       await prisma.stockMovement.create({
         data: {
@@ -263,7 +295,7 @@ async function main() {
           balanceAfter: invDest.physicalQty + 40,
           reason: 'TRANSFER_IN',
           createdById: ops.id,
-        }
+        },
       });
     }
   }
@@ -275,7 +307,7 @@ async function main() {
 }
 
 main()
-  .catch(e => {
+  .catch((e) => {
     console.error(e);
     process.exit(1);
   })

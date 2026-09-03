@@ -13,9 +13,12 @@ export const useInventory = (params: GetInventoryParams) => {
   return useQuery({
     queryKey: ["inventory", params],
     queryFn: async () => {
-      const { data } = await apiClient.get<PaginatedResponse<InventoryItem>>("/inventory", {
-        params,
-      });
+      const { data } = await apiClient.get<PaginatedResponse<InventoryItem>>(
+        "/inventory",
+        {
+          params,
+        },
+      );
       return data;
     },
   });
@@ -23,9 +26,14 @@ export const useInventory = (params: GetInventoryParams) => {
 
 export const useAdjustStock = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: async (data: { inventoryItemId: string; type: "IN" | "OUT"; quantity: number; reason: string }) => {
+    mutationFn: async (data: {
+      inventoryItemId: string;
+      type: "IN" | "OUT";
+      quantity: number;
+      reason: string;
+    }) => {
       const res = await apiClient.post("/inventory/adjust", data);
       return res.data;
     },

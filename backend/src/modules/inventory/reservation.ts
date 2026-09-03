@@ -1,4 +1,4 @@
- import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { AppError } from '../../utils/AppError';
 
 type TransactionClient = Omit<
@@ -16,7 +16,7 @@ export const reserveStock = async (
   itemId: string,
   locationId: string,
   qtyRequired: number,
-  userId: string
+  userId: string,
 ) => {
   if (qtyRequired <= 0) {
     throw new AppError(400, 'BAD_REQUEST', 'Quantity to reserve must be greater than 0');
@@ -24,7 +24,9 @@ export const reserveStock = async (
 
   // 1. Lock the inventory rows for this item and location that have available stock
   // We order by updatedAt ASC to simulate a loose FIFO (oldest stock first)
-  const availableInventoryRows = await tx.$queryRaw<{ id: string; physicalQty: number; reservedQty: number }[]>`
+  const availableInventoryRows = await tx.$queryRaw<
+    { id: string; physicalQty: number; reservedQty: number }[]
+  >`
     SELECT id, "physicalQty", "reservedQty"
     FROM "InventoryItem"
     WHERE "itemId" = ${itemId}::uuid
@@ -65,7 +67,11 @@ export const reserveStock = async (
   }
 
   if (remainingToReserve > 0) {
-    throw new AppError(400, 'BAD_REQUEST', `Insufficient available stock to reserve. Shortfall: ${remainingToReserve}`);
+    throw new AppError(
+      400,
+      'BAD_REQUEST',
+      `Insufficient available stock to reserve. Shortfall: ${remainingToReserve}`,
+    );
   }
 
   // Bulk create the reservations
@@ -80,10 +86,7 @@ export const reserveStock = async (
  * Releases stock reserved for a specific order line.
  * Automatically decrements the reservedQty on the respective InventoryItem.
  */
-export const releaseReservation = async (
-  tx: TransactionClient,
-  orderLineId: string
-) => {
+export const releaseReservation = async (tx: TransactionClient, orderLineId: string) => {
   // Find the reservations to release
   const reservations = await tx.stockReservation.findMany({
     where: { orderLineId },
