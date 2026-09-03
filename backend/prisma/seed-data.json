@@ -1,0 +1,1123 @@
+{
+  "_readme": "Editable catalog for the seeder. Volume and relationships live in seed/generate.ts; this file only holds flat, human-editable content. followUpOffsetDays is relative to the seed run date: negative = overdue, 0 = due today, positive = upcoming, null = no follow-up.",
+
+  "users": [
+    {
+      "key": "admin",
+      "email": "aarti.admin@counterfoil.test",
+      "name": "Aarti Deshpande",
+      "role": "ADMIN"
+    },
+    {
+      "key": "sales",
+      "email": "nikhil.sales@counterfoil.test",
+      "name": "Nikhil Verma",
+      "role": "SALES"
+    },
+    {
+      "key": "warehouse",
+      "email": "suresh.warehouse@counterfoil.test",
+      "name": "Suresh Pawar",
+      "role": "WAREHOUSE"
+    },
+    {
+      "key": "accounts",
+      "email": "meera.accounts@counterfoil.test",
+      "name": "Meera Iyer",
+      "role": "ACCOUNTS"
+    }
+  ],
+
+  "products": [
+    {
+      "sku": "HW-1001",
+      "name": "Steel Bolt 10mm x 50mm",
+      "category": "Hardware",
+      "unitPrice": 12.5,
+      "minStockAlert": 100,
+      "location": "Aisle A-1",
+      "openingStock": 1200
+    },
+    {
+      "sku": "HW-1002",
+      "name": "Steel Nut 10mm",
+      "category": "Hardware",
+      "unitPrice": 5.0,
+      "minStockAlert": 200,
+      "location": "Aisle A-1",
+      "openingStock": 2400
+    },
+    {
+      "sku": "HW-1003",
+      "name": "Flat Washer 10mm",
+      "category": "Hardware",
+      "unitPrice": 2.25,
+      "minStockAlert": 250,
+      "location": "Aisle A-1",
+      "openingStock": 3000
+    },
+    {
+      "sku": "HW-1004",
+      "name": "Spring Washer 10mm",
+      "category": "Hardware",
+      "unitPrice": 3.0,
+      "minStockAlert": 200,
+      "location": "Aisle A-2",
+      "openingStock": 2200
+    },
+    {
+      "sku": "HW-1005",
+      "name": "Hex Bolt 12mm x 75mm",
+      "category": "Hardware",
+      "unitPrice": 18.0,
+      "minStockAlert": 80,
+      "location": "Aisle A-2",
+      "openingStock": 900
+    },
+    {
+      "sku": "HW-1006",
+      "name": "Anchor Fastener 8mm",
+      "category": "Hardware",
+      "unitPrice": 24.5,
+      "minStockAlert": 60,
+      "location": "Aisle A-2",
+      "openingStock": 700
+    },
+    {
+      "sku": "HW-1007",
+      "name": "Wood Screw 3 inch (Box of 100)",
+      "category": "Hardware",
+      "unitPrice": 145.0,
+      "minStockAlert": 40,
+      "location": "Aisle A-3",
+      "openingStock": 450
+    },
+    {
+      "sku": "HW-1008",
+      "name": "Self-Drilling Screw 1 inch (200)",
+      "category": "Hardware",
+      "unitPrice": 210.0,
+      "minStockAlert": 30,
+      "location": "Aisle A-3",
+      "openingStock": 320
+    },
+    {
+      "sku": "HW-1009",
+      "name": "MS Hinge 4 inch",
+      "category": "Hardware",
+      "unitPrice": 65.0,
+      "minStockAlert": 50,
+      "location": "Aisle A-3",
+      "openingStock": 600
+    },
+    {
+      "sku": "HW-1010",
+      "name": "Tower Bolt 6 inch",
+      "category": "Hardware",
+      "unitPrice": 95.0,
+      "minStockAlert": 40,
+      "location": "Aisle A-4",
+      "openingStock": 480
+    },
+    {
+      "sku": "HW-1011",
+      "name": "Door Handle Set (Stainless)",
+      "category": "Hardware",
+      "unitPrice": 340.0,
+      "minStockAlert": 25,
+      "location": "Aisle A-4",
+      "openingStock": 260
+    },
+    {
+      "sku": "HW-1012",
+      "name": "Padlock 50mm Brass",
+      "category": "Hardware",
+      "unitPrice": 275.0,
+      "minStockAlert": 30,
+      "location": "Aisle A-4",
+      "openingStock": 300
+    },
+
+    {
+      "sku": "TL-2001",
+      "name": "Claw Hammer 500g",
+      "category": "Tools",
+      "unitPrice": 250.0,
+      "minStockAlert": 20,
+      "location": "Aisle B-1",
+      "openingStock": 180
+    },
+    {
+      "sku": "TL-2002",
+      "name": "Ball Peen Hammer 300g",
+      "category": "Tools",
+      "unitPrice": 210.0,
+      "minStockAlert": 20,
+      "location": "Aisle B-1",
+      "openingStock": 150
+    },
+    {
+      "sku": "TL-2003",
+      "name": "Adjustable Wrench 10 inch",
+      "category": "Tools",
+      "unitPrice": 380.0,
+      "minStockAlert": 15,
+      "location": "Aisle B-1",
+      "openingStock": 120
+    },
+    {
+      "sku": "TL-2004",
+      "name": "Combination Spanner Set (8pc)",
+      "category": "Tools",
+      "unitPrice": 850.0,
+      "minStockAlert": 10,
+      "location": "Aisle B-2",
+      "openingStock": 90
+    },
+    {
+      "sku": "TL-2005",
+      "name": "Screwdriver Set (6pc)",
+      "category": "Tools",
+      "unitPrice": 320.0,
+      "minStockAlert": 20,
+      "location": "Aisle B-2",
+      "openingStock": 200
+    },
+    {
+      "sku": "TL-2006",
+      "name": "Measuring Tape 5m",
+      "category": "Tools",
+      "unitPrice": 165.0,
+      "minStockAlert": 30,
+      "location": "Aisle B-2",
+      "openingStock": 340
+    },
+    {
+      "sku": "TL-2007",
+      "name": "Spirit Level 600mm",
+      "category": "Tools",
+      "unitPrice": 420.0,
+      "minStockAlert": 12,
+      "location": "Aisle B-3",
+      "openingStock": 110
+    },
+    {
+      "sku": "TL-2008",
+      "name": "Hacksaw Frame 12 inch",
+      "category": "Tools",
+      "unitPrice": 295.0,
+      "minStockAlert": 15,
+      "location": "Aisle B-3",
+      "openingStock": 140
+    },
+    {
+      "sku": "TL-2009",
+      "name": "Plier Set (3pc)",
+      "category": "Tools",
+      "unitPrice": 540.0,
+      "minStockAlert": 12,
+      "location": "Aisle B-3",
+      "openingStock": 95
+    },
+    {
+      "sku": "TL-2010",
+      "name": "Cordless Drill 12V",
+      "category": "Tools",
+      "unitPrice": 3450.0,
+      "minStockAlert": 6,
+      "location": "Aisle B-4",
+      "openingStock": 45
+    },
+    {
+      "sku": "TL-2011",
+      "name": "Angle Grinder 4 inch",
+      "category": "Tools",
+      "unitPrice": 2890.0,
+      "minStockAlert": 6,
+      "location": "Aisle B-4",
+      "openingStock": 38
+    },
+
+    {
+      "sku": "PL-3001",
+      "name": "PVC Pipe 1 inch (3m)",
+      "category": "Plumbing",
+      "unitPrice": 145.0,
+      "minStockAlert": 50,
+      "location": "Yard C-1",
+      "openingStock": 620
+    },
+    {
+      "sku": "PL-3002",
+      "name": "PVC Pipe 2 inch (3m)",
+      "category": "Plumbing",
+      "unitPrice": 265.0,
+      "minStockAlert": 40,
+      "location": "Yard C-1",
+      "openingStock": 480
+    },
+    {
+      "sku": "PL-3003",
+      "name": "PVC Elbow 1 inch",
+      "category": "Plumbing",
+      "unitPrice": 15.0,
+      "minStockAlert": 100,
+      "location": "Aisle C-2",
+      "openingStock": 1400
+    },
+    {
+      "sku": "PL-3004",
+      "name": "PVC Tee 1 inch",
+      "category": "Plumbing",
+      "unitPrice": 22.0,
+      "minStockAlert": 100,
+      "location": "Aisle C-2",
+      "openingStock": 1250
+    },
+    {
+      "sku": "PL-3005",
+      "name": "PVC Coupler 1 inch",
+      "category": "Plumbing",
+      "unitPrice": 12.0,
+      "minStockAlert": 120,
+      "location": "Aisle C-2",
+      "openingStock": 1600
+    },
+    {
+      "sku": "PL-3006",
+      "name": "Ball Valve 1 inch Brass",
+      "category": "Plumbing",
+      "unitPrice": 385.0,
+      "minStockAlert": 20,
+      "location": "Aisle C-3",
+      "openingStock": 240
+    },
+    {
+      "sku": "PL-3007",
+      "name": "Gate Valve 2 inch",
+      "category": "Plumbing",
+      "unitPrice": 720.0,
+      "minStockAlert": 12,
+      "location": "Aisle C-3",
+      "openingStock": 110
+    },
+    {
+      "sku": "PL-3008",
+      "name": "Teflon Tape 12mm",
+      "category": "Plumbing",
+      "unitPrice": 18.0,
+      "minStockAlert": 150,
+      "location": "Aisle C-3",
+      "openingStock": 1800
+    },
+    {
+      "sku": "PL-3009",
+      "name": "Bib Cock (CP Finish)",
+      "category": "Plumbing",
+      "unitPrice": 640.0,
+      "minStockAlert": 15,
+      "location": "Aisle C-4",
+      "openingStock": 160
+    },
+    {
+      "sku": "PL-3010",
+      "name": "Shower Head 4 inch",
+      "category": "Plumbing",
+      "unitPrice": 480.0,
+      "minStockAlert": 20,
+      "location": "Aisle C-4",
+      "openingStock": 180
+    },
+
+    {
+      "sku": "SF-4001",
+      "name": "Safety Goggles Clear",
+      "category": "Safety",
+      "unitPrice": 120.0,
+      "minStockAlert": 40,
+      "location": "Aisle D-1",
+      "openingStock": 500
+    },
+    {
+      "sku": "SF-4002",
+      "name": "Work Gloves (Leather)",
+      "category": "Safety",
+      "unitPrice": 180.0,
+      "minStockAlert": 50,
+      "location": "Aisle D-1",
+      "openingStock": 620
+    },
+    {
+      "sku": "SF-4003",
+      "name": "Nitrile Gloves (Pack of 50)",
+      "category": "Safety",
+      "unitPrice": 340.0,
+      "minStockAlert": 25,
+      "location": "Aisle D-1",
+      "openingStock": 280
+    },
+    {
+      "sku": "SF-4004",
+      "name": "Safety Helmet (Yellow)",
+      "category": "Safety",
+      "unitPrice": 265.0,
+      "minStockAlert": 30,
+      "location": "Aisle D-2",
+      "openingStock": 350
+    },
+    {
+      "sku": "SF-4005",
+      "name": "Reflective Safety Vest",
+      "category": "Safety",
+      "unitPrice": 195.0,
+      "minStockAlert": 30,
+      "location": "Aisle D-2",
+      "openingStock": 400
+    },
+    {
+      "sku": "SF-4006",
+      "name": "Dust Mask N95 (Pack of 10)",
+      "category": "Safety",
+      "unitPrice": 420.0,
+      "minStockAlert": 20,
+      "location": "Aisle D-2",
+      "openingStock": 240
+    },
+    {
+      "sku": "SF-4007",
+      "name": "Safety Shoes Steel Toe",
+      "category": "Safety",
+      "unitPrice": 1650.0,
+      "minStockAlert": 10,
+      "location": "Aisle D-3",
+      "openingStock": 85
+    },
+    {
+      "sku": "SF-4008",
+      "name": "Ear Muffs",
+      "category": "Safety",
+      "unitPrice": 380.0,
+      "minStockAlert": 15,
+      "location": "Aisle D-3",
+      "openingStock": 120
+    },
+    {
+      "sku": "SF-4009",
+      "name": "Fire Extinguisher 2kg ABC",
+      "category": "Safety",
+      "unitPrice": 1450.0,
+      "minStockAlert": 8,
+      "location": "Aisle D-3",
+      "openingStock": 60
+    },
+
+    {
+      "sku": "EL-5001",
+      "name": "Copper Wire 1.5sqmm (90m)",
+      "category": "Electrical",
+      "unitPrice": 1850.0,
+      "minStockAlert": 15,
+      "location": "Aisle E-1",
+      "openingStock": 140
+    },
+    {
+      "sku": "EL-5002",
+      "name": "Copper Wire 2.5sqmm (90m)",
+      "category": "Electrical",
+      "unitPrice": 2950.0,
+      "minStockAlert": 12,
+      "location": "Aisle E-1",
+      "openingStock": 105
+    },
+    {
+      "sku": "EL-5003",
+      "name": "Modular Switch 6A",
+      "category": "Electrical",
+      "unitPrice": 85.0,
+      "minStockAlert": 100,
+      "location": "Aisle E-2",
+      "openingStock": 1200
+    },
+    {
+      "sku": "EL-5004",
+      "name": "Modular Socket 16A",
+      "category": "Electrical",
+      "unitPrice": 165.0,
+      "minStockAlert": 60,
+      "location": "Aisle E-2",
+      "openingStock": 720
+    },
+    {
+      "sku": "EL-5005",
+      "name": "Switch Board 8 Module",
+      "category": "Electrical",
+      "unitPrice": 340.0,
+      "minStockAlert": 30,
+      "location": "Aisle E-2",
+      "openingStock": 320
+    },
+    {
+      "sku": "EL-5006",
+      "name": "MCB 16A Single Pole",
+      "category": "Electrical",
+      "unitPrice": 245.0,
+      "minStockAlert": 40,
+      "location": "Aisle E-3",
+      "openingStock": 460
+    },
+    {
+      "sku": "EL-5007",
+      "name": "Distribution Box 8 Way",
+      "category": "Electrical",
+      "unitPrice": 1250.0,
+      "minStockAlert": 10,
+      "location": "Aisle E-3",
+      "openingStock": 80
+    },
+    {
+      "sku": "EL-5008",
+      "name": "LED Bulb 9W",
+      "category": "Electrical",
+      "unitPrice": 95.0,
+      "minStockAlert": 80,
+      "location": "Aisle E-4",
+      "openingStock": 950
+    },
+    {
+      "sku": "EL-5009",
+      "name": "LED Tube Light 20W",
+      "category": "Electrical",
+      "unitPrice": 320.0,
+      "minStockAlert": 40,
+      "location": "Aisle E-4",
+      "openingStock": 420
+    },
+    {
+      "sku": "EL-5010",
+      "name": "PVC Conduit Pipe 20mm (3m)",
+      "category": "Electrical",
+      "unitPrice": 78.0,
+      "minStockAlert": 80,
+      "location": "Yard C-1",
+      "openingStock": 900
+    },
+
+    {
+      "sku": "PT-6001",
+      "name": "Emulsion Paint White (4L)",
+      "category": "Paint & Finish",
+      "unitPrice": 720.0,
+      "minStockAlert": 25,
+      "location": "Aisle F-1",
+      "openingStock": 280
+    },
+    {
+      "sku": "PT-6002",
+      "name": "Emulsion Paint Ivory (4L)",
+      "category": "Paint & Finish",
+      "unitPrice": 745.0,
+      "minStockAlert": 25,
+      "location": "Aisle F-1",
+      "openingStock": 260
+    },
+    {
+      "sku": "PT-6003",
+      "name": "Enamel Paint Black (1L)",
+      "category": "Paint & Finish",
+      "unitPrice": 285.0,
+      "minStockAlert": 30,
+      "location": "Aisle F-1",
+      "openingStock": 340
+    },
+    {
+      "sku": "PT-6004",
+      "name": "Wood Primer (4L)",
+      "category": "Paint & Finish",
+      "unitPrice": 640.0,
+      "minStockAlert": 20,
+      "location": "Aisle F-2",
+      "openingStock": 210
+    },
+    {
+      "sku": "PT-6005",
+      "name": "Wall Putty 20kg",
+      "category": "Paint & Finish",
+      "unitPrice": 580.0,
+      "minStockAlert": 20,
+      "location": "Aisle F-2",
+      "openingStock": 240
+    },
+    {
+      "sku": "PT-6006",
+      "name": "Paint Brush 3 inch",
+      "category": "Paint & Finish",
+      "unitPrice": 95.0,
+      "minStockAlert": 50,
+      "location": "Aisle F-3",
+      "openingStock": 600
+    },
+    {
+      "sku": "PT-6007",
+      "name": "Paint Roller 9 inch",
+      "category": "Paint & Finish",
+      "unitPrice": 175.0,
+      "minStockAlert": 40,
+      "location": "Aisle F-3",
+      "openingStock": 380
+    },
+    {
+      "sku": "PT-6008",
+      "name": "Masking Tape 24mm",
+      "category": "Paint & Finish",
+      "unitPrice": 65.0,
+      "minStockAlert": 60,
+      "location": "Aisle F-3",
+      "openingStock": 700
+    }
+  ],
+
+  "customers": [
+    {
+      "name": "Rakesh Sharma",
+      "businessName": "Rakesh Traders",
+      "mobile": "9876543210",
+      "email": "rakesh@rakeshtraders.in",
+      "gstNumber": "27AABCR1234M1Z5",
+      "type": "RETAIL",
+      "status": "ACTIVE",
+      "address": "12 Laxmi Road, Pune, Maharashtra 411030",
+      "followUpOffsetDays": -3
+    },
+    {
+      "name": "Priya Nair",
+      "businessName": "BuildWell Corp",
+      "mobile": "9876543211",
+      "email": "priya@buildwell.co.in",
+      "gstNumber": "29AABCB5678K1Z2",
+      "type": "WHOLESALE",
+      "status": "ACTIVE",
+      "address": "4th Cross, Indiranagar, Bengaluru 560038",
+      "followUpOffsetDays": 0
+    },
+    {
+      "name": "Imran Qureshi",
+      "businessName": "City Hardware Mart",
+      "mobile": "9876543212",
+      "email": "imran@cityhardware.in",
+      "gstNumber": "07AACCC9012L1Z8",
+      "type": "DISTRIBUTOR",
+      "status": "ACTIVE",
+      "address": "Shop 44, Karol Bagh, New Delhi 110005",
+      "followUpOffsetDays": null
+    },
+    {
+      "name": "Sunita Rao",
+      "businessName": "Rao Constructions",
+      "mobile": "9876543213",
+      "email": "sunita@raoconstruct.in",
+      "gstNumber": "36AADCR3456N1Z1",
+      "type": "WHOLESALE",
+      "status": "ACTIVE",
+      "address": "Plot 9, Jubilee Hills, Hyderabad 500033",
+      "followUpOffsetDays": -8
+    },
+    {
+      "name": "Vikram Singh",
+      "businessName": "Singh Industrial Supplies",
+      "mobile": "9876543214",
+      "email": "vikram@singhsupplies.in",
+      "gstNumber": "03AAECS7890P1Z4",
+      "type": "DISTRIBUTOR",
+      "status": "ACTIVE",
+      "address": "Phase 7, Mohali, Punjab 160055",
+      "followUpOffsetDays": 6
+    },
+    {
+      "name": "Anjali Mehta",
+      "businessName": "Mehta Interiors",
+      "mobile": "9876543215",
+      "email": "anjali@mehtainteriors.in",
+      "gstNumber": "24AAFCM2345Q1Z7",
+      "type": "RETAIL",
+      "status": "ACTIVE",
+      "address": "CG Road, Ahmedabad, Gujarat 380009",
+      "followUpOffsetDays": null
+    },
+    {
+      "name": "Deepak Kulkarni",
+      "businessName": "Kulkarni Plumbing Works",
+      "mobile": "9876543216",
+      "email": "deepak@kulkarniplumb.in",
+      "gstNumber": "27AAGCK6789R1Z3",
+      "type": "RETAIL",
+      "status": "ACTIVE",
+      "address": "Shivaji Nagar, Nashik 422002",
+      "followUpOffsetDays": null
+    },
+    {
+      "name": "Fatima Sheikh",
+      "businessName": "Sheikh Electricals",
+      "mobile": "9876543217",
+      "email": "fatima@sheikhelec.in",
+      "gstNumber": "19AAHCS0123T1Z9",
+      "type": "WHOLESALE",
+      "status": "ACTIVE",
+      "address": "Park Street, Kolkata 700016",
+      "followUpOffsetDays": -1
+    },
+    {
+      "name": "Arjun Reddy",
+      "businessName": "Reddy Builders",
+      "mobile": "9876543218",
+      "email": "arjun@reddybuilders.in",
+      "gstNumber": "36AAJCR4567U1Z6",
+      "type": "DISTRIBUTOR",
+      "status": "ACTIVE",
+      "address": "Gachibowli, Hyderabad 500032",
+      "followUpOffsetDays": null
+    },
+    {
+      "name": "Kavita Joshi",
+      "businessName": "Joshi Paints & Hardware",
+      "mobile": "9876543219",
+      "email": "kavita@joshipaints.in",
+      "gstNumber": "27AAKCJ8901V1Z2",
+      "type": "RETAIL",
+      "status": "ACTIVE",
+      "address": "MG Road, Pune 411001",
+      "followUpOffsetDays": 12
+    },
+    {
+      "name": "Ravi Menon",
+      "businessName": "Menon Enterprises",
+      "mobile": "9876543220",
+      "email": "ravi@menonent.in",
+      "gstNumber": "32AALCM2345W1Z8",
+      "type": "WHOLESALE",
+      "status": "ACTIVE",
+      "address": "MG Road, Kochi, Kerala 682035",
+      "followUpOffsetDays": null
+    },
+    {
+      "name": "Neha Bansal",
+      "businessName": "Bansal Hardware House",
+      "mobile": "9876543221",
+      "email": "neha@bansalhardware.in",
+      "gstNumber": "06AAMCB6789X1Z4",
+      "type": "RETAIL",
+      "status": "ACTIVE",
+      "address": "Sector 14, Gurugram, Haryana 122001",
+      "followUpOffsetDays": null
+    },
+    {
+      "name": "Sanjay Patil",
+      "businessName": "Patil Infra Projects",
+      "mobile": "9876543222",
+      "email": "sanjay@patilinfra.in",
+      "gstNumber": "27AANCP0123Y1Z1",
+      "type": "DISTRIBUTOR",
+      "status": "ACTIVE",
+      "address": "Hinjewadi Phase 2, Pune 411057",
+      "followUpOffsetDays": 20
+    },
+    {
+      "name": "Lakshmi Iyer",
+      "businessName": "Iyer Trading Co",
+      "mobile": "9876543223",
+      "email": "lakshmi@iyertrading.in",
+      "gstNumber": "33AAOCI4567Z1Z7",
+      "type": "WHOLESALE",
+      "status": "ACTIVE",
+      "address": "T Nagar, Chennai 600017",
+      "followUpOffsetDays": null
+    },
+    {
+      "name": "Mohit Agarwal",
+      "businessName": "Agarwal Steel Depot",
+      "mobile": "9876543224",
+      "email": "mohit@agarwalsteel.in",
+      "gstNumber": "09AAPCA8901A1Z3",
+      "type": "DISTRIBUTOR",
+      "status": "ACTIVE",
+      "address": "Hazratganj, Lucknow 226001",
+      "followUpOffsetDays": null
+    },
+    {
+      "name": "Rekha Desai",
+      "businessName": "Desai Tools Mart",
+      "mobile": "9876543225",
+      "email": "rekha@desaitools.in",
+      "gstNumber": "24AAQCD2345B1Z9",
+      "type": "RETAIL",
+      "status": "ACTIVE",
+      "address": "Ring Road, Surat, Gujarat 395002",
+      "followUpOffsetDays": null
+    },
+    {
+      "name": "Ashok Gupta",
+      "businessName": "Gupta Sanitary Stores",
+      "mobile": "9876543226",
+      "email": "ashok@guptasanitary.in",
+      "gstNumber": "08AARCG6789C1Z5",
+      "type": "RETAIL",
+      "status": "ACTIVE",
+      "address": "MI Road, Jaipur, Rajasthan 302001",
+      "followUpOffsetDays": 4
+    },
+    {
+      "name": "Divya Krishnan",
+      "businessName": "Krishnan Contractors",
+      "mobile": "9876543227",
+      "email": "divya@krishnancontract.in",
+      "gstNumber": "29AASCK0123D1Z2",
+      "type": "WHOLESALE",
+      "status": "ACTIVE",
+      "address": "Whitefield, Bengaluru 560066",
+      "followUpOffsetDays": null
+    },
+    {
+      "name": "Harish Chandra",
+      "businessName": "Chandra Hardware",
+      "mobile": "9876543228",
+      "email": "harish@chandrahw.in",
+      "gstNumber": "21AATCC4567E1Z8",
+      "type": "RETAIL",
+      "status": "ACTIVE",
+      "address": "Saheed Nagar, Bhubaneswar 751007",
+      "followUpOffsetDays": null
+    },
+    {
+      "name": "Pooja Malhotra",
+      "businessName": "Malhotra Electricals",
+      "mobile": "9876543229",
+      "email": "pooja@malhotraelec.in",
+      "gstNumber": "07AAUCM8901F1Z4",
+      "type": "WHOLESALE",
+      "status": "ACTIVE",
+      "address": "Lajpat Nagar, New Delhi 110024",
+      "followUpOffsetDays": null
+    },
+    {
+      "name": "Ganesh Naik",
+      "businessName": "Naik Building Materials",
+      "mobile": "9876543230",
+      "email": "ganesh@naikbuild.in",
+      "gstNumber": "30AAVCN2345G1Z1",
+      "type": "DISTRIBUTOR",
+      "status": "ACTIVE",
+      "address": "Panaji, North Goa 403001",
+      "followUpOffsetDays": null
+    },
+    {
+      "name": "Sneha Bhatt",
+      "businessName": "Bhatt Hardware Hub",
+      "mobile": "9876543231",
+      "email": "sneha@bhatthardware.in",
+      "gstNumber": "24AAWCB6789H1Z7",
+      "type": "RETAIL",
+      "status": "ACTIVE",
+      "address": "Alkapuri, Vadodara 390007",
+      "followUpOffsetDays": 9
+    },
+    {
+      "name": "Rohit Chauhan",
+      "businessName": "Chauhan Traders",
+      "mobile": "9876543232",
+      "email": "rohit@chauhantraders.in",
+      "gstNumber": "23AAXCC0123J1Z3",
+      "type": "WHOLESALE",
+      "status": "ACTIVE",
+      "address": "MP Nagar, Bhopal 462011",
+      "followUpOffsetDays": null
+    },
+    {
+      "name": "Meenakshi Pillai",
+      "businessName": "Pillai Hardware Centre",
+      "mobile": "9876543233",
+      "email": "meena@pillaihardware.in",
+      "gstNumber": "32AAYCP4567K1Z9",
+      "type": "RETAIL",
+      "status": "ACTIVE",
+      "address": "Fort, Thiruvananthapuram 695023",
+      "followUpOffsetDays": null
+    },
+
+    {
+      "name": "Amit Thakur",
+      "businessName": "Thakur Developers",
+      "mobile": "9812345601",
+      "email": "amit@thakurdev.in",
+      "gstNumber": null,
+      "type": "WHOLESALE",
+      "status": "LEAD",
+      "address": "Dehradun, Uttarakhand 248001",
+      "followUpOffsetDays": -2
+    },
+    {
+      "name": "Shalini Roy",
+      "businessName": "Roy Renovations",
+      "mobile": "9812345602",
+      "email": "shalini@royrenov.in",
+      "gstNumber": null,
+      "type": "RETAIL",
+      "status": "LEAD",
+      "address": "Salt Lake, Kolkata 700091",
+      "followUpOffsetDays": 0
+    },
+    {
+      "name": "Kunal Shetty",
+      "businessName": "Shetty Infra",
+      "mobile": "9812345603",
+      "email": "kunal@shettyinfra.in",
+      "gstNumber": null,
+      "type": "DISTRIBUTOR",
+      "status": "LEAD",
+      "address": "Mangaluru, Karnataka 575001",
+      "followUpOffsetDays": 3
+    },
+    {
+      "name": "Tanvi Kapoor",
+      "businessName": null,
+      "mobile": "9812345604",
+      "email": null,
+      "gstNumber": null,
+      "type": "RETAIL",
+      "status": "LEAD",
+      "address": "Andheri West, Mumbai 400058",
+      "followUpOffsetDays": 7
+    },
+    {
+      "name": "Nitin Saxena",
+      "businessName": "Saxena Hardware",
+      "mobile": "9812345605",
+      "email": "nitin@saxenahw.in",
+      "gstNumber": null,
+      "type": "RETAIL",
+      "status": "LEAD",
+      "address": "Civil Lines, Kanpur 208001",
+      "followUpOffsetDays": -5
+    },
+    {
+      "name": "Bhavana Rathod",
+      "businessName": "Rathod Enterprises",
+      "mobile": "9812345606",
+      "email": "bhavana@rathodent.in",
+      "gstNumber": null,
+      "type": "WHOLESALE",
+      "status": "LEAD",
+      "address": "Rajkot, Gujarat 360001",
+      "followUpOffsetDays": 14
+    },
+    {
+      "name": "Zubair Ahmed",
+      "businessName": "Ahmed Sanitary",
+      "mobile": "9812345607",
+      "email": "zubair@ahmedsanitary.in",
+      "gstNumber": null,
+      "type": "RETAIL",
+      "status": "LEAD",
+      "address": "Charminar, Hyderabad 500002",
+      "followUpOffsetDays": 2
+    },
+    {
+      "name": "Ritu Dhawan",
+      "businessName": null,
+      "mobile": "9812345608",
+      "email": null,
+      "gstNumber": null,
+      "type": "RETAIL",
+      "status": "LEAD",
+      "address": "Sector 22, Chandigarh 160022",
+      "followUpOffsetDays": 25
+    },
+    {
+      "name": "Prakash Jain",
+      "businessName": "Jain Hardware & Paints",
+      "mobile": "9812345609",
+      "email": "prakash@jainhardware.in",
+      "gstNumber": null,
+      "type": "WHOLESALE",
+      "status": "LEAD",
+      "address": "Indore, Madhya Pradesh 452001",
+      "followUpOffsetDays": 5
+    },
+    {
+      "name": "Sarita Yadav",
+      "businessName": "Yadav Construction",
+      "mobile": "9812345610",
+      "email": "sarita@yadavconst.in",
+      "gstNumber": null,
+      "type": "DISTRIBUTOR",
+      "status": "LEAD",
+      "address": "Patna, Bihar 800001",
+      "followUpOffsetDays": 11
+    },
+    {
+      "name": "Manoj Tiwari",
+      "businessName": "Tiwari Traders",
+      "mobile": "9812345611",
+      "email": "manoj@tiwaritraders.in",
+      "gstNumber": null,
+      "type": "RETAIL",
+      "status": "LEAD",
+      "address": "Varanasi, Uttar Pradesh 221001",
+      "followUpOffsetDays": 1
+    },
+    {
+      "name": "Alisha Fernandes",
+      "businessName": "Fernandes Interiors",
+      "mobile": "9812345612",
+      "email": "alisha@fernandesint.in",
+      "gstNumber": null,
+      "type": "RETAIL",
+      "status": "LEAD",
+      "address": "Bandra East, Mumbai 400051",
+      "followUpOffsetDays": 17
+    },
+    {
+      "name": "Devendra Bhosale",
+      "businessName": "Bhosale Steel Works",
+      "mobile": "9812345613",
+      "email": "dev@bhosalesteel.in",
+      "gstNumber": null,
+      "type": "WHOLESALE",
+      "status": "LEAD",
+      "address": "Kolhapur, Maharashtra 416001",
+      "followUpOffsetDays": 8
+    },
+
+    {
+      "name": "Om Prakash",
+      "businessName": "Prakash Hardware (Closed)",
+      "mobile": "9700001101",
+      "email": null,
+      "gstNumber": "27AAZCP8901L1Z6",
+      "type": "RETAIL",
+      "status": "INACTIVE",
+      "address": "Dadar, Mumbai 400014",
+      "followUpOffsetDays": null
+    },
+    {
+      "name": "Geeta Solanki",
+      "businessName": "Solanki Supplies",
+      "mobile": "9700001102",
+      "email": null,
+      "gstNumber": "24ABACS2345M1Z2",
+      "type": "WHOLESALE",
+      "status": "INACTIVE",
+      "address": "Bhavnagar, Gujarat 364001",
+      "followUpOffsetDays": null
+    },
+    {
+      "name": "Farhan Ali",
+      "businessName": "Ali Brothers",
+      "mobile": "9700001103",
+      "email": null,
+      "gstNumber": null,
+      "type": "RETAIL",
+      "status": "INACTIVE",
+      "address": "Aligarh, Uttar Pradesh 202001",
+      "followUpOffsetDays": -40
+    },
+    {
+      "name": "Nandini Barua",
+      "businessName": "Barua Trading",
+      "mobile": "9700001104",
+      "email": null,
+      "gstNumber": "18ABBCB6789N1Z8",
+      "type": "DISTRIBUTOR",
+      "status": "INACTIVE",
+      "address": "Guwahati, Assam 781005",
+      "followUpOffsetDays": null
+    },
+    {
+      "name": "Sameer Kulkarni",
+      "businessName": null,
+      "mobile": "9700001105",
+      "email": null,
+      "gstNumber": null,
+      "type": "RETAIL",
+      "status": "INACTIVE",
+      "address": "Solapur, Maharashtra 413001",
+      "followUpOffsetDays": null
+    },
+    {
+      "name": "Jyoti Ranjan",
+      "businessName": "Ranjan Hardware",
+      "mobile": "9700001106",
+      "email": null,
+      "gstNumber": null,
+      "type": "RETAIL",
+      "status": "INACTIVE",
+      "address": "Cuttack, Odisha 753001",
+      "followUpOffsetDays": null
+    },
+    {
+      "name": "Balaji Subram",
+      "businessName": "Subram & Sons",
+      "mobile": "9700001107",
+      "email": null,
+      "gstNumber": "33ABCCS0123P1Z4",
+      "type": "WHOLESALE",
+      "status": "INACTIVE",
+      "address": "Coimbatore, Tamil Nadu 641002",
+      "followUpOffsetDays": null
+    },
+    {
+      "name": "Kiran Bedi",
+      "businessName": "Bedi Hardware Stores",
+      "mobile": "9700001108",
+      "email": null,
+      "gstNumber": null,
+      "type": "RETAIL",
+      "status": "INACTIVE",
+      "address": "Amritsar, Punjab 143001",
+      "followUpOffsetDays": null
+    }
+  ],
+
+  "noteTemplates": [
+    "Called to discuss bulk pricing on fasteners. Asked for a revised quote.",
+    "Site visit done. Requirement confirmed for next month's project.",
+    "Requested credit terms extension to 45 days. Escalated to accounts.",
+    "Follow-up call: still comparing quotes with two other suppliers.",
+    "Placed a trial order. Wants to see delivery turnaround before committing.",
+    "Asked about availability of safety equipment in bulk.",
+    "Not reachable on mobile. Will try the landline next week.",
+    "Happy with last delivery. Likely to reorder within the fortnight.",
+    "Wants a catalogue with updated prices sent over email.",
+    "Negotiating on payment terms. Awaiting internal approval on their side.",
+    "Requested samples of PVC fittings before placing a wholesale order.",
+    "Complaint about a short delivery on the last challan. Resolved.",
+    "Interested in the electrical range. Scheduling a product demo.",
+    "Renewing annual supply contract. Draft shared for review.",
+    "Enquired about GST invoicing for interstate delivery."
+  ],
+
+  "manualStockReasons": {
+    "IN": [
+      "Restock from supplier",
+      "Purchase order received",
+      "Customer return to stock",
+      "Stock count correction (excess found)"
+    ],
+    "OUT": [
+      "Damaged in storage",
+      "Sample issued to customer",
+      "Stock count correction (shortage)",
+      "Internal use by workshop"
+    ]
+  },
+
+  "challanNotes": [
+    "Deliver before 5 PM. Gate pass required at site entry.",
+    "Customer will collect from warehouse.",
+    "Split delivery requested. Part 1 of 2.",
+    "Urgent order. Confirmed over phone by the customer.",
+    "Include the printed invoice with the shipment.",
+    "Handle with care. Fragile items included.",
+    null,
+    null,
+    null
+  ]
+}
