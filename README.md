@@ -1,8 +1,8 @@
-# Counterfoil
+# Godown
 
-Counterfoil is a modern, monolithic web application built to streamline operations for small-to-medium businesses. It provides a cohesive suite of modules encompassing Role-Based Access Control, Customer CRM, Inventory Management, and Sales Order (Challan) processing.
+Godown is a modern, monolithic web application built to streamline operations for small-to-medium businesses. It provides a cohesive suite of modules encompassing Role-Based Access Control, Customer CRM, Inventory Management, and Sales Order (Challan) processing.
 
-By deeply linking sales to inventory, Counterfoil ensures stock integrity through transactional guardrails (preventing negative inventory) while providing robust audit logs.
+By deeply linking sales to inventory, Godown ensures stock integrity through transactional guardrails (preventing negative inventory) while providing robust audit logs.
 
 ## Modules Built
 
@@ -14,9 +14,9 @@ By deeply linking sales to inventory, Counterfoil ensures stock integrity throug
 
 ## Live Links
 
-- **Frontend URL**: [https://counterfoil.dinanath.dev](https://counterfoil.dinanath.dev)
-- **Backend Base URL**: [https://api.counterfoil.dinanath.dev/api](https://api.counterfoil.dinanath.dev/api)
-- **API Health Check**: [https://api.counterfoil.dinanath.dev/api/health](https://api.counterfoil.dinanath.dev/api/health)
+- **Frontend URL**: [https://godown.dinanath.dev](https://godown.dinanath.dev)
+- **Backend Base URL**: [https://api.godown.dinanath.dev/api](https://api.godown.dinanath.dev/api)
+- **API Health Check**: [https://api.godown.dinanath.dev/api/health](https://api.godown.dinanath.dev/api/health)
 
 _(Note: Render free tier instances spin down after inactivity. Initial API requests may take up to 50 seconds to respond as the instance wakes up)._
 
@@ -24,12 +24,12 @@ _(Note: Render free tier instances spin down after inactivity. Initial API reque
 
 Use these seeded accounts to log in and explore role-based restrictions. **Password for all accounts is `Password@123`.**
 
-| Role      | Email                               |
-| --------- | ----------------------------------- |
-| Admin     | `aarti.admin@counterfoil.test`      |
-| Sales     | `nikhil.sales@counterfoil.test`     |
-| Warehouse | `suresh.warehouse@counterfoil.test` |
-| Accounts  | `meera.accounts@counterfoil.test`   |
+| Role      | Email                          |
+| --------- | ------------------------------ |
+| Admin     | `aarti.admin@godown.test`      |
+| Sales     | `nikhil.sales@godown.test`     |
+| Warehouse | `suresh.warehouse@godown.test` |
+| Accounts  | `meera.accounts@godown.test`   |
 
 ## Tech Stack
 
@@ -54,7 +54,7 @@ For a deeper dive into the system:
 
    ```bash
    git clone <repo-url>
-   cd counterfoil
+   cd godown
    ```
 
 2. **Backend Setup**:

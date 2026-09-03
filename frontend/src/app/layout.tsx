@@ -9,7 +9,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { FreeTierNotification } from "@/components/layout/FreeTierNotification";
 
 export const metadata: Metadata = {
-  title: "Counterfoil ERP",
+  title: "Godown ERP",
   description: "Operations tool",
 };
 

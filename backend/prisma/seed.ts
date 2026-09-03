@@ -1,326 +1,281 @@
-/**
- * Database seeder.
- *
- * Content lives in seed-data.json (editable by hand); volume, relationships and
- * the stock ledger are computed in seed/generate.ts. This file only resolves the
- * plan's catalog indexes into real UUIDs and writes rows.
- *
- *   npm run seed         no-op if the database already has data; only writes to an empty one
- *   npm run seed:reset   wipes transactional tables first (never in production)
- *
- * IMPORTANT: some deploy pipelines (this project's Render build included) run
- * `npm run seed` automatically on every build. That is why a bare `npm run seed`
- * refuses to write into a populated database instead of trying to be additive —
- * an earlier version tried to be additive and silently duplicated every
- * customer and note on the second run before crashing on a duplicate challan
- * number. If you want fresh data, use `npm run seed:reset` explicitly.
- */
-// `prisma db seed` injects .env itself, but `npm run seed` runs tsx directly
-// and would otherwise start without DATABASE_URL.
 import 'dotenv/config';
-import { PrismaClient, Prisma, Role, MovementType } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
-
-import { generatePlan, assertPlanIsConsistent, SEED, VOLUME, type Catalog } from './seed/generate';
 
 const prisma = new PrismaClient();
-
 const DEFAULT_PASSWORD = 'Password@123';
 
-const catalog: Catalog = JSON.parse(
-  readFileSync(join(__dirname, 'seed-data.json'), 'utf-8'),
-) as Catalog;
-
-const shouldReset = process.argv.includes('--reset');
-
-const decimal = (n: number) => new Prisma.Decimal(n.toFixed(2));
-
-/**
- * Deletes transactional data in FK-safe order. Users survive so existing logins
- * keep working; they are upserted below either way.
- */
-async function reset() {
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('Refusing to reset the database: NODE_ENV is "production".');
-  }
-
-  console.log('Resetting transactional tables...');
-  await prisma.challanItem.deleteMany();
-  await prisma.stockMovement.deleteMany();
-  await prisma.challan.deleteMany();
-  await prisma.customerNote.deleteMany();
-  await prisma.customer.deleteMany();
-  await prisma.product.deleteMany();
-  await prisma.counter.deleteMany();
-  await prisma.user.deleteMany();
-}
-
-/**
- * True if the database already has core data. A bare `npm run seed` bails out
- * when this is true rather than trying to be additive — see the file header.
- */
-async function alreadySeeded(): Promise<boolean> {
-  const [customers, products, challans] = await Promise.all([
-    prisma.customer.count(),
-    prisma.product.count(),
-    prisma.challan.count(),
-  ]);
-  return customers > 0 || products > 0 || challans > 0;
-}
-
 async function main() {
-  const startedAt = Date.now();
-  const now = new Date();
+  console.log('Resetting database...');
+  // Delete in reverse dependency order
+  await prisma.stockReservation.deleteMany();
+  await prisma.customerOrderLine.deleteMany();
+  await prisma.customerOrder.deleteMany();
+  await prisma.customer.deleteMany();
+  await prisma.stockTransfer.deleteMany();
+  await prisma.workOrder.deleteMany();
+  await prisma.stockMovement.deleteMany();
+  await prisma.inventoryItem.deleteMany();
+  await prisma.batch.deleteMany();
+  await prisma.item.deleteMany();
+  await prisma.category.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.location.deleteMany();
+  await prisma.counter.deleteMany();
 
-  if (shouldReset) {
-    await reset();
-  } else if (await alreadySeeded()) {
-    console.log(
-      [
-        'Database already has customers/products/challans — skipping (this is not an error).',
-        'Run `npm run seed:reset` to wipe and reseed.',
-        '',
-        'If a deploy pipeline is running `npm run seed` on every build, remove that step:',
-        'seeding a shared database automatically on every deploy is not safe, and this guard',
-        'only prevents a crash — it does not mean auto-seeding-on-deploy is a good idea.',
-      ].join('\n'),
-    );
-    return;
-  }
-
-  const plan = generatePlan(catalog, now);
-  assertPlanIsConsistent(plan);
-
-  // --- Users ---------------------------------------------------------------
   const passwordHash = await bcrypt.hash(DEFAULT_PASSWORD, 10);
-  const userIdByKey = new Map<string, string>();
 
-  for (const u of catalog.users) {
-    const user = await prisma.user.upsert({
-      where: { email: u.email },
-      update: { name: u.name, role: u.role as Role },
-      create: { name: u.name, email: u.email, role: u.role as Role, passwordHash },
+  console.log('Seeding Locations...');
+  const locMum = await prisma.location.create({ data: { code: 'WH-MUM', name: 'Mumbai Warehouse' } });
+  const locPun = await prisma.location.create({ data: { code: 'WH-PUN', name: 'Pune Warehouse' } });
+  const locDel = await prisma.location.create({ data: { code: 'WH-DEL', name: 'Delhi Warehouse' } });
+  const locations = [locMum, locPun, locDel];
+
+  console.log('Seeding Users...');
+  await prisma.user.create({ data: { name: 'Aarti Deshpande', email: 'aarti.admin@godown.test', passwordHash, role: 'ADMIN', locationId: locMum.id } });
+  const sales = await prisma.user.create({ data: { name: 'Nikhil Verma', email: 'nikhil.sales@godown.test', passwordHash, role: 'SALES', locationId: locMum.id } });
+  const ops = await prisma.user.create({ data: { name: 'Suresh Pawar', email: 'suresh.warehouse@godown.test', passwordHash, role: 'OPERATIONS', locationId: locMum.id } });
+
+  console.log('Seeding Categories...');
+  const catHw = await prisma.category.create({ data: { name: 'Hardware' } });
+  const catTl = await prisma.category.create({ data: { name: 'Tools' } });
+  const catPl = await prisma.category.create({ data: { name: 'Plumbing' } });
+  const catSf = await prisma.category.create({ data: { name: 'Safety' } });
+
+  console.log('Seeding Items & Inventory...');
+  const itemsData = [
+    { sku: 'HW-1001', name: 'Steel Bolt 10mm x 50mm', categoryId: catHw.id },
+    { sku: 'HW-1002', name: 'Steel Nut 10mm', categoryId: catHw.id },
+    { sku: 'HW-1003', name: 'Flat Washer 10mm', categoryId: catHw.id },
+    { sku: 'HW-1004', name: 'Spring Washer 10mm', categoryId: catHw.id },
+    { sku: 'HW-1005', name: 'Hex Bolt 12mm x 75mm', categoryId: catHw.id },
+    { sku: 'TL-2001', name: 'Claw Hammer 500g', categoryId: catTl.id },
+    { sku: 'TL-2002', name: 'Ball Peen Hammer 300g', categoryId: catTl.id },
+    { sku: 'TL-2003', name: 'Adjustable Wrench 10 inch', categoryId: catTl.id },
+    { sku: 'TL-2004', name: 'Combination Spanner Set (8pc)', categoryId: catTl.id },
+    { sku: 'TL-2005', name: 'Screwdriver Set (6pc)', categoryId: catTl.id },
+    { sku: 'PL-3001', name: 'PVC Pipe 1 inch (3m)', categoryId: catPl.id },
+    { sku: 'PL-3002', name: 'PVC Pipe 2 inch (3m)', categoryId: catPl.id },
+    { sku: 'PL-3003', name: 'PVC Elbow 1 inch', categoryId: catPl.id },
+    { sku: 'PL-3004', name: 'PVC Tee 1 inch', categoryId: catPl.id },
+    { sku: 'PL-3005', name: 'PVC Coupler 1 inch', categoryId: catPl.id },
+    { sku: 'SF-4001', name: 'Safety Goggles Clear', categoryId: catSf.id },
+    { sku: 'SF-4002', name: 'Work Gloves (Leather)', categoryId: catSf.id },
+    { sku: 'SF-4003', name: 'Nitrile Gloves (Pack of 50)', categoryId: catSf.id },
+    { sku: 'SF-4004', name: 'Safety Helmet (Yellow)', categoryId: catSf.id },
+    { sku: 'SF-4005', name: 'Reflective Safety Vest', categoryId: catSf.id },
+  ];
+
+  const allItems = [];
+  for (const data of itemsData) {
+    const item = await prisma.item.create({ data });
+    allItems.push(item);
+    // Create a batch
+    const batch = await prisma.batch.create({
+      data: { itemId: item.id, code: `B-2026-${Math.floor(Math.random() * 1000)}` },
     });
-    userIdByKey.set(u.key, user.id);
+    // Create inventory in each location with some random stock
+    for (const loc of locations) {
+      const physicalQty = Math.floor(Math.random() * 500) + 10;
+      const invItem = await prisma.inventoryItem.create({
+        data: {
+          itemId: item.id,
+          locationId: loc.id,
+          batchId: batch.id,
+          physicalQty,
+        }
+      });
+      // Add opening stock movement
+      await prisma.stockMovement.create({
+        data: {
+          inventoryItemId: invItem.id,
+          type: 'IN',
+          quantity: physicalQty,
+          balanceAfter: physicalQty,
+          reason: 'OPENING_STOCK',
+          createdById: ops.id,
+        }
+      });
+    }
   }
 
-  const salesId = userIdByKey.get('sales')!;
-  const userId = (key: string) => userIdByKey.get(key) ?? salesId;
-
-  // --- Products ------------------------------------------------------------
-  const plannedProductBySku = new Map(plan.products.map((p) => [p.sku, p]));
-
-  await prisma.product.createMany({
-    data: catalog.products.map((p) => {
-      const planned = plannedProductBySku.get(p.sku)!;
-      return {
-        name: p.name,
-        sku: p.sku,
-        category: p.category,
-        unitPrice: decimal(p.unitPrice),
-        currentStock: planned.currentStock,
-        minStockAlert: planned.minStockAlert,
-        location: p.location,
-      };
-    }),
-    skipDuplicates: true,
-  });
-
-  const productIdBySku = new Map(
-    (await prisma.product.findMany({ select: { id: true, sku: true } })).map((p) => [p.sku, p.id]),
-  );
-
-  // --- Customers -----------------------------------------------------------
-  // `Customer.mobile` is indexed but not `@unique` in the schema, so
-  // `skipDuplicates` has no DB constraint to key off and would silently insert
-  // every row again on a rerun. Filter against what already exists instead.
-  const existingMobiles = new Set(
-    (await prisma.customer.findMany({ select: { mobile: true } })).map((c) => c.mobile),
-  );
-
-  await prisma.customer.createMany({
-    data: catalog.customers
-      .map((c, i) => ({ c, i }))
-      .filter(({ c }) => !existingMobiles.has(c.mobile))
-      .map(({ c, i }) => {
-        const customerChallans = plan.challans.filter(
-          (ch) => ch.customerIndex === i && ch.status === 'CONFIRMED',
-        );
-        const balance = customerChallans.reduce((sum, ch) => sum + ch.totalAmount, 0);
-        const creditLimit = Math.max(100000, balance * 2);
-
-        return {
-          name: c.name,
-          mobile: c.mobile,
-          email: c.email,
-          businessName: c.businessName,
-          gstNumber: c.gstNumber,
-          type: c.type,
-          address: c.address,
-          status: c.status,
-          creditLimit: decimal(creditLimit),
-          balance: decimal(balance),
-          followUpDate: plan.customers[i].followUpDate,
-          createdById: salesId,
-          createdAt: plan.customers[i].createdAt,
-          updatedAt: plan.customers[i].createdAt,
-        };
-      }),
-  });
-
-  const customerIdByMobile = new Map(
-    (await prisma.customer.findMany({ select: { id: true, mobile: true } })).map((c) => [
-      c.mobile,
-      c.id,
-    ]),
-  );
-  const customerId = (index: number) => customerIdByMobile.get(catalog.customers[index].mobile)!;
-
-  // --- Customer notes ------------------------------------------------------
-  await prisma.customerNote.createMany({
-    data: plan.notes.map((n) => ({
-      customerId: customerId(n.customerIndex),
-      note: n.note,
-      followUpDate: n.followUpDate,
-      createdById: userId(n.userKey),
-      createdAt: n.createdAt,
-    })),
-  });
-
-  // --- Challans ------------------------------------------------------------
-  // One create per challan so items come along as a nested write; 120 rows is
-  // well inside a single transaction's budget.
-  const challanIdByNumber = new Map<string, string>();
-
-  for (const c of plan.challans) {
-    const source = catalog.customers[c.customerIndex];
-    const challan = await prisma.challan.create({
+  console.log('Seeding Customers...');
+  const customers = [];
+  for (let i = 1; i <= 10; i++) {
+    const cust = await prisma.customer.create({
       data: {
-        challanNumber: c.challanNumber,
-        customerId: customerId(c.customerIndex),
-        customerSnapshot: {
-          name: source.name,
-          mobile: source.mobile,
-          email: source.email,
-          businessName: source.businessName,
-          gstNumber: source.gstNumber,
-          address: source.address,
-        },
-        status: c.status,
-        totalQuantity: c.totalQuantity,
-        totalAmount: decimal(c.totalAmount),
-        notes: c.notes,
-        createdById: userId(c.userKey),
-        confirmedAt: c.confirmedAt,
-        cancelledAt: c.cancelledAt,
-        createdAt: c.createdAt,
-        updatedAt: c.cancelledAt ?? c.confirmedAt ?? c.createdAt,
-        items: {
-          create: c.items.map((item) => {
-            const product = catalog.products.find((p) => p.sku === item.sku)!;
-            return {
-              productId: productIdBySku.get(item.sku)!,
-              productName: product.name,
-              sku: product.sku,
-              category: product.category,
-              unitPrice: decimal(item.unitPrice),
-              quantity: item.quantity,
-              lineTotal: decimal(item.lineTotal),
-            };
-          }),
-        },
-      },
-      select: { id: true, challanNumber: true },
+        name: `Customer ${i}`,
+        businessName: `Business ${i} Ltd`,
+        mobile: `987654321${i % 10}`,
+        email: `customer${i}@example.com`,
+      }
     });
-    challanIdByNumber.set(challan.challanNumber, challan.id);
+    customers.push(cust);
   }
 
-  // --- Stock movements -----------------------------------------------------
-  await prisma.stockMovement.createMany({
-    data: plan.movements.map((m) => ({
-      productId: productIdBySku.get(m.sku)!,
-      quantity: m.quantity,
-      type: m.type as MovementType,
-      reason: m.reason,
-      referenceType: m.referenceType,
-      referenceId: m.challanNumber ? (challanIdByNumber.get(m.challanNumber) ?? null) : null,
-      balanceAfter: m.balanceAfter,
-      createdById: userId(m.userKey),
-      createdAt: m.createdAt,
-    })),
-  });
-
-  // --- Challan counter -----------------------------------------------------
-  // Without this the app would restart numbering at 0001 and collide with the
-  // seeded challans on the first save.
-  await prisma.counter.upsert({
-    where: { key: 'challan_seq' },
-    update: { value: plan.counterValue },
-    create: { key: 'challan_seq', value: plan.counterValue },
-  });
-
-  await summarise(startedAt);
-}
-
-/** Prints the same numbers the dashboard will show, so a bad seed is obvious. */
-async function summarise(startedAt: number) {
-  const startOfToday = new Date(new Date().setHours(0, 0, 0, 0));
-  const endOfToday = new Date(new Date().setHours(23, 59, 59, 999));
-
-  const [customers, active, lead, products, drafts, confirmed, cancelled, today, movements, notes] =
-    await Promise.all([
-      prisma.customer.count({ where: { deletedAt: null } }),
-      prisma.customer.count({ where: { deletedAt: null, status: 'ACTIVE' } }),
-      prisma.customer.count({ where: { deletedAt: null, status: 'LEAD' } }),
-      prisma.product.count({ where: { deletedAt: null, isActive: true } }),
-      prisma.challan.count({ where: { status: 'DRAFT' } }),
-      prisma.challan.count({ where: { status: 'CONFIRMED' } }),
-      prisma.challan.count({ where: { status: 'CANCELLED' } }),
-      prisma.challan.count({ where: { createdAt: { gte: startOfToday } } }),
-      prisma.stockMovement.count(),
-      prisma.customerNote.count(),
-    ]);
-
-  const lowStock = await prisma.$queryRaw<{ count: bigint }[]>`
-    SELECT COUNT(*)::bigint AS count FROM "products"
-    WHERE "deletedAt" IS NULL AND "isActive" = true AND "currentStock" <= "minStockAlert"
-  `;
-  const followUps = await prisma.customer.count({
-    where: {
-      deletedAt: null,
-      followUpDate: { lte: endOfToday },
-      status: { not: 'INACTIVE' },
+  console.log('Seeding Orders & WorkOrders...');
+  // 1 Reserved Order
+  const order = await prisma.customerOrder.create({
+    data: {
+      code: 'ORD-2026-00001',
+      customerId: customers[0].id,
+      locationId: locMum.id,
+      status: 'RESERVED',
+      createdById: sales.id,
+      lines: {
+        create: [
+          {
+            itemId: allItems[0].id,
+            quantity: 10,
+          }
+        ]
+      }
     },
+    include: { lines: true }
   });
 
-  console.log(`
-Seed complete in ${((Date.now() - startedAt) / 1000).toFixed(1)}s  (SEED=${SEED}, ${VOLUME.daysOfHistory} days of history)
+  const line = order.lines[0];
+  const invToReserve = await prisma.inventoryItem.findFirst({
+    where: { itemId: line.itemId, locationId: locMum.id }
+  });
+  if (invToReserve) {
+    await prisma.inventoryItem.update({
+      where: { id: invToReserve.id },
+      data: { reservedQty: 10 }
+    });
+    await prisma.stockReservation.create({
+      data: {
+        orderLineId: line.id,
+        inventoryItemId: invToReserve.id,
+        quantity: 10
+      }
+    });
+  }
 
-  Customers        ${customers}  (${active} active, ${lead} lead)
-  Products         ${products}
-  Challans         ${drafts + confirmed + cancelled}  (${drafts} draft, ${confirmed} confirmed, ${cancelled} cancelled)
-  Stock movements  ${movements}
-  Customer notes   ${notes}
+  // 2 Work Orders
+  await prisma.workOrder.create({
+    data: {
+      code: 'WO-2026-00001',
+      locationId: locMum.id,
+      itemId: allItems[1].id,
+      requiredQty: 50,
+      assignedToId: ops.id,
+      status: 'ASSIGNED'
+    }
+  });
 
-  Dashboard panels
-    Challans today   ${today}
-    Low stock items  ${Number(lowStock[0].count)}
-    Follow-ups due   ${followUps}
+  await prisma.workOrder.create({
+    data: {
+      code: 'WO-2026-00002',
+      locationId: locPun.id,
+      itemId: allItems[2].id,
+      requiredQty: 10000, // Shortage
+      assignedToId: ops.id,
+      status: 'ASSIGNED'
+    }
+  });
 
-  Log in with any of: ${catalog.users.map((u) => u.email).join(', ')}
-  Password: ${DEFAULT_PASSWORD}
-`);
+  console.log('Seeding Transfers...');
+  // Requested
+  const batch1 = await prisma.batch.findFirst({ where: { itemId: allItems[3].id } });
+  if (batch1) {
+    await prisma.stockTransfer.create({
+      data: {
+        code: 'TRF-2026-00001',
+        itemId: allItems[3].id,
+        batchId: batch1.id,
+        sourceLocationId: locMum.id,
+        destinationLocationId: locPun.id,
+        quantity: 20,
+        requestedById: ops.id,
+        status: 'REQUESTED'
+      }
+    });
+  }
 
-  if (today === 0)
-    console.warn('WARNING: no challans dated today — the "Challans today" tile will read 0.');
-  if (Number(lowStock[0].count) === 0) console.warn('WARNING: low-stock panel will be empty.');
-  if (followUps === 0) console.warn('WARNING: follow-ups panel will be empty.');
+  // Dispatched
+  const batch2 = await prisma.batch.findFirst({ where: { itemId: allItems[4].id } });
+  if (batch2) {
+    const invSrc = await prisma.inventoryItem.findFirst({ where: { itemId: allItems[4].id, locationId: locMum.id, batchId: batch2.id }});
+    if (invSrc) {
+      await prisma.stockTransfer.create({
+        data: {
+          code: 'TRF-2026-00002',
+          itemId: allItems[4].id,
+          batchId: batch2.id,
+          sourceLocationId: locMum.id,
+          destinationLocationId: locPun.id,
+          quantity: 30,
+          dispatchedQty: 30,
+          requestedById: ops.id,
+          status: 'DISPATCHED',
+          dispatchedAt: new Date()
+        }
+      });
+      await prisma.inventoryItem.update({
+        where: { id: invSrc.id },
+        data: { physicalQty: { decrement: 30 } }
+      });
+      await prisma.stockMovement.create({
+        data: {
+          inventoryItemId: invSrc.id,
+          type: 'OUT',
+          quantity: 30,
+          balanceAfter: invSrc.physicalQty - 30,
+          reason: 'TRANSFER_OUT',
+          createdById: ops.id,
+        }
+      });
+    }
+  }
+
+  // Received
+  const batch3 = await prisma.batch.findFirst({ where: { itemId: allItems[5].id } });
+  if (batch3) {
+    const invDest = await prisma.inventoryItem.findFirst({ where: { itemId: allItems[5].id, locationId: locPun.id, batchId: batch3.id }});
+    if (invDest) {
+      await prisma.stockTransfer.create({
+        data: {
+          code: 'TRF-2026-00003',
+          itemId: allItems[5].id,
+          batchId: batch3.id,
+          sourceLocationId: locMum.id,
+          destinationLocationId: locPun.id,
+          quantity: 40,
+          dispatchedQty: 40,
+          receivedQty: 40,
+          requestedById: ops.id,
+          status: 'RECEIVED',
+          dispatchedAt: new Date(),
+          receivedAt: new Date()
+        }
+      });
+      // Assuming it was already decremented from source and now we increment destination
+      await prisma.inventoryItem.update({
+        where: { id: invDest.id },
+        data: { physicalQty: { increment: 40 } }
+      });
+      await prisma.stockMovement.create({
+        data: {
+          inventoryItemId: invDest.id,
+          type: 'IN',
+          quantity: 40,
+          balanceAfter: invDest.physicalQty + 40,
+          reason: 'TRANSFER_IN',
+          createdById: ops.id,
+        }
+      });
+    }
+  }
+
+  // Set Counter
+  await prisma.counter.create({ data: { key: 'challan_seq', value: 10 } });
+
+  console.log('Seed completed successfully!');
 }
 
 main()
-  .catch((e) => {
+  .catch(e => {
     console.error(e);
     process.exit(1);
   })

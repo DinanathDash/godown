@@ -11,6 +11,7 @@ declare global {
         id: string;
         role: string;
         email: string;
+        locationId: string | null;
       };
     }
   }
@@ -28,7 +29,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
 
     const user = await prisma.user.findUnique({
       where: { id: decoded.sub },
-      select: { id: true, role: true, email: true, isActive: true },
+      select: { id: true, role: true, email: true, isActive: true, locationId: true },
     });
 
     if (!user || !user.isActive) {
@@ -39,6 +40,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       id: user.id,
       role: user.role,
       email: user.email,
+      locationId: user.locationId,
     };
 
     next();

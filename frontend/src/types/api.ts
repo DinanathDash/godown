@@ -1,10 +1,11 @@
-export type Role = "ADMIN" | "ACCOUNTS" | "SALES" | "WAREHOUSE";
+export type Role = "ADMIN" | "OPERATIONS" | "SALES";
 
 export interface User {
   id: string;
   email: string;
   name: string;
   role: Role;
+  locationId: string | null;
 }
 
 export interface AuthResponse {
@@ -30,90 +31,28 @@ export interface PaginatedResponse<T> {
   };
 }
 
-export type CustomerStatus = "ACTIVE" | "LEAD" | "INACTIVE";
-export type CustomerType = "RETAIL" | "WHOLESALE" | "DISTRIBUTOR";
-
-export interface Customer {
+export interface InventoryItem {
   id: string;
-  name: string;
-  businessName: string | null;
-  email: string | null;
-  mobile: string;
-  address: string | null;
-  type: CustomerType;
-  status: CustomerStatus;
-  creditLimit: string;
-  balance: string;
-  gstin: string | null;
-  followUpDate: string | null;
-  createdAt: string;
+  itemId: string;
+  locationId: string;
+  batchId: string;
+  physicalQty: number;
+  reservedQty: number;
+  availableQty: number;
   updatedAt: string;
-}
-
-export interface Product {
-  id: string;
-  sku: string;
-  name: string;
-  description: string | null;
-  category: string;
-  unitPrice: string;
-  currentStock: number;
-  minStockAlert: number;
-  location: string | null;
-  status: "ACTIVE" | "DISCONTINUED";
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface ChallanItem {
-  id: string;
-  challanId: string;
-  productId: string;
-  quantity: number;
-  unitPrice: string;
-  lineTotal: string;
-  productName: string | null;
-  sku: string | null;
-}
-
-export interface Challan {
-  id: string;
-  challanNumber: string | null;
-  customerId: string;
-  status: "DRAFT" | "CONFIRMED" | "CANCELLED";
-  totalAmount: string;
-  notes: string | null;
-  createdById: string;
-  confirmedById: string | null;
-  cancelledById: string | null;
-  createdAt: string;
-  updatedAt: string;
-  confirmedAt: string | null;
-  cancelledAt: string | null;
-  customerSnapshot?: {
+  item: {
+    id: string;
     name: string;
-    businessName: string | null;
-    email: string | null;
-    mobile: string | null;
-    gstNumber: string | null;
-    address: string | null;
+    sku: string;
+    uom: string;
   };
-  items: ChallanItem[];
-  _count?: {
-    items: number;
+  location: {
+    id: string;
+    code: string;
+    name: string;
   };
-}
-
-export interface StockMovement {
-  id: string;
-  productId: string;
-  type: "IN" | "OUT";
-  quantity: number;
-  balanceAfter: number;
-  reason: string;
-  referenceId: string | null;
-  referenceType: string | null;
-  createdById: string;
-  createdAt: string;
-  createdBy: { name: string; email: string };
+  batch: {
+    id: string;
+    code: string;
+  };
 }

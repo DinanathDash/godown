@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "Counterfoil API",
-    "description": "API collection for Counterfoil ERP",
+    "name": "Godown API",
+    "description": "API collection for Godown ERP",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -29,7 +29,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"email\": \"aarti.admin@counterfoil.test\",\n    \"password\": \"Password@123\"\n}",
+              "raw": "{\n    \"email\": \"aarti.admin@godown.test\",\n    \"password\": \"Password@123\"\n}",
               "options": {
                 "raw": {
                   "language": "json"

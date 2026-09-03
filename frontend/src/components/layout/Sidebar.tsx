@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  Users,
   Package,
   FileText,
   Settings,
@@ -13,11 +12,8 @@ import {
   LogOut,
   Command,
   PanelLeftClose,
-  LineChart,
-  CreditCard,
   Receipt,
   ClipboardList,
-  Folder,
   ChevronDown,
   type LucideIcon,
 } from "lucide-react";
@@ -64,60 +60,35 @@ const navGroups: NavGroup[] = [
         badge: 2,
         requiredPermission: "VIEW_DASHBOARD",
       },
-      {
-        title: "Analytics",
-        icon: LineChart,
-        isDummy: true,
-        children: [
-          { title: "Overview", href: "#", isDummy: true },
-          { title: "Reports", href: "#", isDummy: true },
-          { title: "Insights", href: "#", isDummy: true },
-        ],
-      },
-      { title: "Teams", href: "#", icon: Users, isDummy: true },
     ],
   },
   {
     label: "Operations",
     items: [
       {
-        title: "Customers",
-        href: "/customers",
-        icon: Users,
-        requiredPermission: "VIEW_CUSTOMER",
-      },
-      {
-        title: "Products",
-        href: "/products",
+        title: "Inventory",
+        href: "/inventory",
         icon: Package,
-        requiredPermission: "VIEW_PRODUCT",
+        requiredPermission: "VIEW_INVENTORY",
       },
       {
-        title: "Challans",
-        href: "/challans",
-        icon: FileText,
-        requiredPermission: "VIEW_CHALLAN",
-      },
-    ],
-  },
-  {
-    label: "Finance",
-    items: [
-      { title: "My cards", href: "#", icon: CreditCard, isDummy: true },
-      { title: "Payments", href: "#", icon: Receipt, isDummy: true },
-    ],
-  },
-  {
-    label: "Work",
-    items: [
-      {
-        title: "Tasks",
-        href: "#",
+        title: "Work Orders",
+        href: "/work-orders",
         icon: ClipboardList,
-        badge: 1,
-        isDummy: true,
+        requiredPermission: "VIEW_WORK_ORDERS",
       },
-      { title: "Files", href: "#", icon: Folder, isDummy: true },
+      {
+        title: "Transfers",
+        href: "/transfers",
+        icon: FileText,
+        requiredPermission: "VIEW_TRANSFERS",
+      },
+      {
+        title: "Customer Orders",
+        href: "/orders",
+        icon: Receipt,
+        requiredPermission: "VIEW_ORDERS",
+      },
     ],
   },
 ];
@@ -180,7 +151,7 @@ export function Sidebar() {
           {!isCollapsed && (
             <div className="flex flex-col whitespace-nowrap opacity-100 transition-opacity duration-300">
               <span className="text-[15px] font-bold text-ink leading-tight">
-                Counterfoil
+                Godown
               </span>
               <span className="text-[11px] text-muted-foreground font-medium leading-tight">
                 ERP System
@@ -438,7 +409,7 @@ export function Sidebar() {
                   {user?.name || "Wei Chen"}
                 </span>
                 <span className="text-[11px] text-muted-foreground font-medium leading-tight truncate max-w-[120px]">
-                  {user?.email || "wei@counterfoil.app"}
+                  {user?.email || "wei@godown.app"}
                 </span>
               </div>
             )}

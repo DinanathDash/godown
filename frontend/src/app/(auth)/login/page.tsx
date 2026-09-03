@@ -91,7 +91,7 @@ export default function LoginPage() {
         <div className="absolute top-8 left-8 sm:top-8 sm:left-8">
           <div className="flex items-center gap-2 font-bold text-xl text-ink">
             <Command className="w-6 h-6" />
-            Counterfoil
+            Godown
           </div>
         </div>
 
@@ -121,7 +121,7 @@ export default function LoginPage() {
                 variant="outline"
                 type="button"
                 onClick={() =>
-                  fillDummy("aarti.admin@counterfoil.test", "Password@123")
+                  fillDummy("aarti.admin@godown.test", "Password@123")
                 }
                 className="h-11 border-neutral-200 hover:bg-neutral-50 text-muted-foreground hover:text-ink transition-colors flex items-center justify-center gap-2"
                 title="Admin Account"
@@ -133,7 +133,7 @@ export default function LoginPage() {
                 variant="outline"
                 type="button"
                 onClick={() =>
-                  fillDummy("nikhil.sales@counterfoil.test", "Password@123")
+                  fillDummy("nikhil.sales@godown.test", "Password@123")
                 }
                 className="h-11 border-neutral-200 hover:bg-neutral-50 text-muted-foreground hover:text-ink transition-colors flex items-center justify-center gap-2"
                 title="Sales Account"
@@ -145,7 +145,7 @@ export default function LoginPage() {
                 variant="outline"
                 type="button"
                 onClick={() =>
-                  fillDummy("suresh.warehouse@counterfoil.test", "Password@123")
+                  fillDummy("suresh.warehouse@godown.test", "Password@123")
                 }
                 className="h-11 border-neutral-200 hover:bg-neutral-50 text-muted-foreground hover:text-ink transition-colors flex items-center justify-center gap-2"
                 title="Warehouse Account"
@@ -157,7 +157,7 @@ export default function LoginPage() {
                 variant="outline"
                 type="button"
                 onClick={() =>
-                  fillDummy("meera.accounts@counterfoil.test", "Password@123")
+                  fillDummy("meera.accounts@godown.test", "Password@123")
                 }
                 className="h-11 border-neutral-200 hover:bg-neutral-50 text-muted-foreground hover:text-ink transition-colors flex items-center justify-center gap-2"
                 title="Accounts Account"
@@ -194,7 +194,7 @@ export default function LoginPage() {
                 <InputGroupInput
                   id="email"
                   type="email"
-                  placeholder="hello@counterfoil.app"
+                  placeholder="hello@godown.app"
                   {...register("email")}
                 />
               </InputGroup>
@@ -289,7 +289,7 @@ export default function LoginPage() {
           </div>
 
           <h2 className="text-[32px] lg:text-[40px] font-medium text-ink leading-[1.15] tracking-tight mb-8">
-            Counterfoil has transformed our daily operations.{" "}
+            Godown has transformed our daily operations.{" "}
             <span className="text-muted-foreground">
               Its seamless integration of CRM, inventory, and sales orders
               ensures our stock is always perfectly synced.

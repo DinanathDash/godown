@@ -1,11 +1,11 @@
 # Deployment Guide
 
-Counterfoil is designed to be deployed with the Backend hosted on **Render** (as a Web Service) and the Frontend hosted on **Vercel**.
+Godown is designed to be deployed with the Backend hosted on **Render** (as a Web Service) and the Frontend hosted on **Vercel**.
 
 ## 1. Prerequisites
 
 - A PostgreSQL database (e.g., Neon, Supabase, or AWS RDS).
-- A GitHub repository containing the Counterfoil source code.
+- A GitHub repository containing the Godown source code.
 - Accounts on Render and Vercel.
 
 ## 2. Backend Deployment (Render)
@@ -14,7 +14,7 @@ Counterfoil is designed to be deployed with the Backend hosted on **Render** (as
 2. Click **New +** and select **Web Service**.
 3. Connect your GitHub repository.
 4. Configure the service:
-   - **Name**: `counterfoil-api`
+   - **Name**: `godown-api`
    - **Root Directory**: `backend`
    - **Environment**: `Node`
    - **Build Command**: `npm install --include=dev && npm run build && npx prisma generate && npx prisma migrate deploy && npx prisma db seed`
@@ -35,13 +35,13 @@ _(Note: The build command above automatically runs database migrations and seeds
 2. Click **Add New...** and select **Project**.
 3. Import your GitHub repository.
 4. Configure the project:
-   - **Project Name**: `counterfoil`
+   - **Project Name**: `godown`
    - **Framework Preset**: `Next.js`
    - **Root Directory**: `frontend`
    - **Build Command**: `npm run build`
    - **Output Directory**: `.next`
 5. Configure Environment Variables:
-   - `NEXT_PUBLIC_API_URL`: The URL of your Render backend (e.g., `https://counterfoil-api.onrender.com/api`).
+   - `NEXT_PUBLIC_API_URL`: The URL of your Render backend (e.g., `https://godown-api.onrender.com/api`).
 6. Click **Deploy**.
 7. Vercel will automatically build and assign a `.vercel.app` domain.
 

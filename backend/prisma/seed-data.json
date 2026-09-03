@@ -4,25 +4,25 @@
   "users": [
     {
       "key": "admin",
-      "email": "aarti.admin@counterfoil.test",
+      "email": "aarti.admin@godown.test",
       "name": "Aarti Deshpande",
       "role": "ADMIN"
     },
     {
       "key": "sales",
-      "email": "nikhil.sales@counterfoil.test",
+      "email": "nikhil.sales@godown.test",
       "name": "Nikhil Verma",
       "role": "SALES"
     },
     {
       "key": "warehouse",
-      "email": "suresh.warehouse@counterfoil.test",
+      "email": "suresh.warehouse@godown.test",
       "name": "Suresh Pawar",
       "role": "WAREHOUSE"
     },
     {
       "key": "accounts",
-      "email": "meera.accounts@counterfoil.test",
+      "email": "meera.accounts@godown.test",
       "name": "Meera Iyer",
       "role": "ACCOUNTS"
     }

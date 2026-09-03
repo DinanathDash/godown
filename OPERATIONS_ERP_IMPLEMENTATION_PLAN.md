@@ -10,30 +10,30 @@
 
 **Yes, for the platform. No, for the inventory model.** Be honest about the split, because it drives every estimate below.
 
-| Layer | Reusable? | Notes |
-|---|---|---|
-| Auth: JWT, bcrypt, `authenticate`, `requireRole` | **~95%** | Only the role enum changes |
-| `validate` middleware, `AppError`, `errorHandler`, status-code taxonomy | **~100%** | Lift as-is |
-| Module shape (`routes → controller → service → schema`) | **~100%** | Pattern, not code |
-| Prisma setup, migration + seed tooling | **~90%** | Seed *generator* is reusable; seed *data* is not |
-| Test harness (vitest + supertest + `setup.ts`) | **~100%** | The 5 mandatory tests slot straight in |
-| Frontend shell: AppShell, Sidebar, auth store, `ProtectedRoute`, `permissions.ts`, TanStack Query, axios client | **~90%** | Retarget to 5 screens |
-| UI kit: Table, Dialog, Select, Badge, Skeleton, Pagination, toast, sortable headers | **~100%** | Straight lift |
-| **Concurrency / transaction patterns** | **pattern only** | The conditional-write idiom is exactly right — see §5 |
-| `Product.currentStock` model | **replaced** | Wrong grain |
-| Challan / ChallanItem | **deleted** | Replaced by CustomerOrder + reservations |
-| Customer CRM (notes, follow-ups, status) | **deleted** | Not in the brief; brief says *build only these screens* |
-| Dashboard module | **deleted** | Not in the brief |
+| Layer                                                                                                           | Reusable?        | Notes                                                   |
+| --------------------------------------------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------- |
+| Auth: JWT, bcrypt, `authenticate`, `requireRole`                                                                | **~95%**         | Only the role enum changes                              |
+| `validate` middleware, `AppError`, `errorHandler`, status-code taxonomy                                         | **~100%**        | Lift as-is                                              |
+| Module shape (`routes → controller → service → schema`)                                                         | **~100%**        | Pattern, not code                                       |
+| Prisma setup, migration + seed tooling                                                                          | **~90%**         | Seed _generator_ is reusable; seed _data_ is not        |
+| Test harness (vitest + supertest + `setup.ts`)                                                                  | **~100%**        | The 5 mandatory tests slot straight in                  |
+| Frontend shell: AppShell, Sidebar, auth store, `ProtectedRoute`, `permissions.ts`, TanStack Query, axios client | **~90%**         | Retarget to 5 screens                                   |
+| UI kit: Table, Dialog, Select, Badge, Skeleton, Pagination, toast, sortable headers                             | **~100%**        | Straight lift                                           |
+| **Concurrency / transaction patterns**                                                                          | **pattern only** | The conditional-write idiom is exactly right — see §5   |
+| `Product.currentStock` model                                                                                    | **replaced**     | Wrong grain                                             |
+| Challan / ChallanItem                                                                                           | **deleted**      | Replaced by CustomerOrder + reservations                |
+| Customer CRM (notes, follow-ups, status)                                                                        | **deleted**      | Not in the brief; brief says _build only these screens_ |
+| Dashboard module                                                                                                | **deleted**      | Not in the brief                                        |
 
 **Net effect: roughly 30–40% of the work is already done**, and it is the boring 30–40% — auth, errors, validation plumbing, UI primitives, test setup, deploy config.
 
 ### What that saves you, concretely
 
-Counterfoil already solves the exact problem at the centre of this brief. The challan-confirm path uses a **conditional write** — `updateMany` with a `gte` guard in the `WHERE`, then treat `count === 0` as "someone beat me to it". That idiom is the answer to *"two users must not both reserve"*, to *"cannot transfer more than available"*, and to *"same transfer cannot be received twice"*. Same shape, three times. You have already built and tested it once.
+Counterfoil already solves the exact problem at the centre of this brief. The challan-confirm path uses a **conditional write** — `updateMany` with a `gte` guard in the `WHERE`, then treat `count === 0` as "someone beat me to it". That idiom is the answer to _"two users must not both reserve"_, to _"cannot transfer more than available"_, and to _"same transfer cannot be received twice"_. Same shape, three times. You have already built and tested it once.
 
 ### The honest risks
 
-1. **Scope leakage.** The brief says *"Build only these screens"* and *"Focus on functionality instead of excessive UI design."* Leaving Counterfoil's CRM, dashboard and challan screens in place reads as not following the brief. Strip them.
+1. **Scope leakage.** The brief says _"Build only these screens"_ and _"Focus on functionality instead of excessive UI design."_ Leaving Counterfoil's CRM, dashboard and challan screens in place reads as not following the brief. Strip them.
 2. **Conceptual collision.** `Product` vs `Item`, `Challan` vs `CustomerOrder`, `location: String` vs `Location` table. Keeping both vocabularies in one repo will confuse a reviewer and confuse you in the live round.
 3. **Git history.** The brief requires real development history. Inheriting Counterfoil's history is honest but describes a different product.
 
@@ -48,17 +48,17 @@ Do **not** branch inside Counterfoil and delete half of it. The deletion diff is
 
 ### Where the marks actually are
 
-| Parameter | Marks | |
-|---|---:|---|
-| Backend & APIs | 20 | ⎫ |
-| Business Logic | 20 | ⎬ **55 marks = backend correctness** |
-| Inventory / Transaction Correctness | 15 | ⎭ |
-| Database Design | 15 | |
-| Frontend Integration | 10 | ← only 10 |
-| Auth & Authorization | 8 | |
-| Testing | 5 | |
-| Code Quality | 5 | |
-| Documentation | 2 | |
+| Parameter                           | Marks |                                      |
+| ----------------------------------- | ----: | ------------------------------------ |
+| Backend & APIs                      |    20 | ⎫                                    |
+| Business Logic                      |    20 | ⎬ **55 marks = backend correctness** |
+| Inventory / Transaction Correctness |    15 | ⎭                                    |
+| Database Design                     |    15 |                                      |
+| Frontend Integration                |    10 | ← only 10                            |
+| Auth & Authorization                |     8 |                                      |
+| Testing                             |     5 |                                      |
+| Code Quality                        |     5 |                                      |
+| Documentation                       |     2 |                                      |
 
 **Spend accordingly.** The frontend is worth 10. The inventory/transaction core is worth 35 with database design behind it. Do not polish UI while the reservation race is unproven.
 
@@ -82,23 +82,23 @@ Do **not** branch inside Counterfoil and delete half of it. The deletion diff is
 
 Carried from Counterfoil unless marked **new**.
 
-| Layer | Choice | Reason |
-|---|---|---|
-| Runtime | Node.js 20 LTS | Stable on all free hosts |
-| Language | TypeScript, `strict: true` | |
-| API | Express 5 | Already proven in Counterfoil |
-| ORM | Prisma 5 | Type-safe queries + migrations + seed |
-| Database | PostgreSQL 16 (Neon) | Row locking is the backbone of §5 |
-| Validation | Zod | Reused shapes, runtime + types |
-| Auth | JWT (HS256) + bcrypt | |
-| Frontend | Next.js (App Router) + TypeScript | Reuse Counterfoil's shell wholesale |
-| Server state | TanStack Query v5 | |
-| Forms | react-hook-form + zod resolver | |
-| Styling | Tailwind + existing UI kit | |
-| Tests | vitest + supertest | The 5 mandatory tests are API-level |
-| **API docs** | **openapi.yaml + swagger-ui-express** | **new** — served at `/api/docs`, demos well |
-| **ER diagram** | **Mermaid in README** | **new** — version-controlled, no image to stale |
-| Hosting | Neon + Render + Vercel | Same as before |
+| Layer          | Choice                                | Reason                                          |
+| -------------- | ------------------------------------- | ----------------------------------------------- |
+| Runtime        | Node.js 20 LTS                        | Stable on all free hosts                        |
+| Language       | TypeScript, `strict: true`            |                                                 |
+| API            | Express 5                             | Already proven in Counterfoil                   |
+| ORM            | Prisma 5                              | Type-safe queries + migrations + seed           |
+| Database       | PostgreSQL 16 (Neon)                  | Row locking is the backbone of §5               |
+| Validation     | Zod                                   | Reused shapes, runtime + types                  |
+| Auth           | JWT (HS256) + bcrypt                  |                                                 |
+| Frontend       | Next.js (App Router) + TypeScript     | Reuse Counterfoil's shell wholesale             |
+| Server state   | TanStack Query v5                     |                                                 |
+| Forms          | react-hook-form + zod resolver        |                                                 |
+| Styling        | Tailwind + existing UI kit            |                                                 |
+| Tests          | vitest + supertest                    | The 5 mandatory tests are API-level             |
+| **API docs**   | **openapi.yaml + swagger-ui-express** | **new** — served at `/api/docs`, demos well     |
+| **ER diagram** | **Mermaid in README**                 | **new** — version-controlled, no image to stale |
+| Hosting        | Neon + Render + Vercel                | Same as before                                  |
 
 ---
 
@@ -381,22 +381,22 @@ model Counter {
 
 The brief requires a minimum of three. Use exactly three — fewer moving parts to explain.
 
-| Action | Admin | Operations | Sales |
-|---|:--:|:--:|:--:|
-| Login, view own profile | ✔ | ✔ | ✔ |
-| Inventory: read | ✔ | ✔ | ✔ |
-| Inventory: adjust (manual IN/OUT) | ✔ | ✔ | ✖ |
-| Items / Locations / Batches: create | ✔ | ✔ | ✖ |
-| Work Orders: **create** | ✔ | ✖ | ✖ |
-| Work Orders: read | ✔ | ✔ | ✔ |
-| Work Orders: change status | ✔ | ✔ | ✖ |
-| Transfers: request / dispatch / receive | ✔ | ✔ | ✖ |
-| Transfers: read | ✔ | ✔ | ✔ |
-| Customer Orders: **create + reserve** | ✔ | ✖ | ✔ |
-| Customer Orders: read | ✔ | ✔ | ✔ |
-| Customer Orders: cancel | ✔ | ✖ | ✔ |
+| Action                                  | Admin | Operations | Sales |
+| --------------------------------------- | :---: | :--------: | :---: |
+| Login, view own profile                 |   ✔   |     ✔      |   ✔   |
+| Inventory: read                         |   ✔   |     ✔      |   ✔   |
+| Inventory: adjust (manual IN/OUT)       |   ✔   |     ✔      |   ✖   |
+| Items / Locations / Batches: create     |   ✔   |     ✔      |   ✖   |
+| Work Orders: **create**                 |   ✔   |     ✖      |   ✖   |
+| Work Orders: read                       |   ✔   |     ✔      |   ✔   |
+| Work Orders: change status              |   ✔   |     ✔      |   ✖   |
+| Transfers: request / dispatch / receive |   ✔   |     ✔      |   ✖   |
+| Transfers: read                         |   ✔   |     ✔      |   ✔   |
+| Customer Orders: **create + reserve**   |   ✔   |     ✖      |   ✔   |
+| Customer Orders: read                   |   ✔   |     ✔      |   ✔   |
+| Customer Orders: cancel                 |   ✔   |     ✖      |   ✔   |
 
-Straight from the brief: *"Admin can create Work Orders. Operations User can manage inventory and transfers. Sales User can create orders and reserve stock."*
+Straight from the brief: _"Admin can create Work Orders. Operations User can manage inventory and transfers. Sales User can create orders and reserve stock."_
 
 Enforced by `requireRole(...)` on every route. The frontend mirrors it in `permissions.ts` to hide controls — **the server is the source of truth.** Mandatory Test 5 proves it.
 
@@ -426,7 +426,7 @@ Prisma's `where` cannot compare two fields of the same model in an `updateMany`.
 
 ### 5.3 Reserving stock (the headline requirement)
 
-> *Available = 100. User A reserves 80, User B reserves 50. Both requests must not succeed.*
+> _Available = 100. User A reserves 80, User B reserves 50. Both requests must not succeed._
 
 Reserve inside one transaction, locking candidate rows up front with `SELECT ... FOR UPDATE`:
 
@@ -453,9 +453,18 @@ async function reserveLine(
 
   const totalAvailable = rows.reduce((sum, r) => sum + Number(r.available), 0);
   if (totalAvailable < line.quantity) {
-    throw new AppError(409, 'INSUFFICIENT_AVAILABLE',
+    throw new AppError(
+      409,
+      "INSUFFICIENT_AVAILABLE",
       `Insufficient available stock for item ${line.itemId}`,
-      [{ itemId: line.itemId, requested: line.quantity, available: totalAvailable }]);
+      [
+        {
+          itemId: line.itemId,
+          requested: line.quantity,
+          available: totalAvailable,
+        },
+      ],
+    );
   }
 
   // Allocate across batches, oldest first.
@@ -492,14 +501,14 @@ const updated = await tx.$executeRaw`
   WHERE id = ${inventoryItemId}::uuid
     AND physical_qty - reserved_qty >= ${qty}
 `;
-if (updated === 0) throw new AppError(409, 'INSUFFICIENT_AVAILABLE', '...');
+if (updated === 0) throw new AppError(409, "INSUFFICIENT_AVAILABLE", "...");
 ```
 
-One statement, the `WHERE` *is* the guard, `0` rows means someone else got there first. This is the same idiom Counterfoil already uses for challan confirmation.
+One statement, the `WHERE` _is_ the guard, `0` rows means someone else got there first. This is the same idiom Counterfoil already uses for challan confirmation.
 
 ### 5.4 Releasing a reservation
 
-Live-verification Change 3 is *"cancel an order and correctly release its reserved inventory."* The reservation ledger makes it a loop:
+Live-verification Change 3 is _"cancel an order and correctly release its reserved inventory."_ The reservation ledger makes it a loop:
 
 ```ts
 async function releaseOrder(tx: Prisma.TransactionClient, orderId: string) {
@@ -520,7 +529,7 @@ async function releaseOrder(tx: Prisma.TransactionClient, orderId: string) {
 
   await tx.customerOrder.update({
     where: { id: orderId },
-    data: { status: 'CANCELLED', cancelledAt: new Date() },
+    data: { status: "CANCELLED", cancelledAt: new Date() },
   });
 }
 ```
@@ -533,11 +542,11 @@ async function releaseOrder(tx: Prisma.TransactionClient, orderId: string) {
 
 The brief's rules, restated precisely:
 
-| Step | Source | Destination |
-|---|---|---|
-| Requested | unchanged | unchanged |
-| **Dispatched** | `physicalQty` decreases | **unchanged** |
-| **Received** | unchanged | `physicalQty` increases |
+| Step           | Source                  | Destination             |
+| -------------- | ----------------------- | ----------------------- |
+| Requested      | unchanged               | unchanged               |
+| **Dispatched** | `physicalQty` decreases | **unchanged**           |
+| **Received**   | unchanged               | `physicalQty` increases |
 
 Between dispatch and receipt the quantity is **in transit** — it belongs to no location. The transfer row itself is the in-transit record; no phantom inventory row is needed.
 
@@ -546,11 +555,15 @@ Between dispatch and receipt the quantity is **in transit** — it belongs to no
 ```ts
 // Guard the status transition and the stock in the same transaction.
 const claimed = await tx.stockTransfer.updateMany({
-  where: { id: transferId, status: 'REQUESTED' },
-  data: { status: 'DISPATCHED', dispatchedQty: qty, dispatchedAt: new Date() },
+  where: { id: transferId, status: "REQUESTED" },
+  data: { status: "DISPATCHED", dispatchedQty: qty, dispatchedAt: new Date() },
 });
 if (claimed.count === 0)
-  throw new AppError(409, 'INVALID_STATUS_TRANSITION', 'Transfer is not awaiting dispatch');
+  throw new AppError(
+    409,
+    "INVALID_STATUS_TRANSITION",
+    "Transfer is not awaiting dispatch",
+  );
 
 const moved = await tx.$executeRaw`
   UPDATE inventory_items
@@ -559,7 +572,11 @@ const moved = await tx.$executeRaw`
     AND physical_qty - reserved_qty >= ${qty}
 `;
 if (moved === 0)
-  throw new AppError(409, 'INSUFFICIENT_AVAILABLE', 'Not enough unreserved stock at source');
+  throw new AppError(
+    409,
+    "INSUFFICIENT_AVAILABLE",
+    "Not enough unreserved stock at source",
+  );
 ```
 
 Note the guard is against **available**, not physical — you must not dispatch stock that Sales has already promised to a customer. This is a deliberate business rule; state it in the README.
@@ -568,11 +585,15 @@ Note the guard is against **available**, not physical — you must not dispatch 
 
 ```ts
 const claimed = await tx.stockTransfer.updateMany({
-  where: { id: transferId, status: 'DISPATCHED' },   // ← the idempotency guard
-  data: { status: 'RECEIVED', receivedQty: qty, receivedAt: new Date() },
+  where: { id: transferId, status: "DISPATCHED" }, // ← the idempotency guard
+  data: { status: "RECEIVED", receivedQty: qty, receivedAt: new Date() },
 });
 if (claimed.count === 0)
-  throw new AppError(409, 'ALREADY_RECEIVED', 'Transfer is not awaiting receipt');
+  throw new AppError(
+    409,
+    "ALREADY_RECEIVED",
+    "Transfer is not awaiting receipt",
+  );
 
 // Only now does the destination increase.
 await tx.inventoryItem.upsert({
@@ -600,10 +621,14 @@ const [{ available }] = await prisma.$queryRaw<{ available: number }[]>`
   FROM inventory_items
   WHERE item_id = ${wo.itemId}::uuid AND location_id = ${wo.locationId}::uuid
 `;
-return { ...wo, availableQty: available, shortageQty: Math.max(0, wo.requiredQty - available) };
+return {
+  ...wo,
+  availableQty: available,
+  shortageQty: Math.max(0, wo.requiredQty - available),
+};
 ```
 
-The Work Orders screen shows required / available / shortage per row, and when shortage > 0 offers **"Request transfer"**, pre-filled with the item, the shortfall quantity, and a source location that has the stock. That single button is what makes the brief's flow — *Inventory → Work Order → Stock Check → Transfer → Reservation* — legible in the demo video.
+The Work Orders screen shows required / available / shortage per row, and when shortage > 0 offers **"Request transfer"**, pre-filled with the item, the shortfall quantity, and a source location that has the stock. That single button is what makes the brief's flow — _Inventory → Work Order → Stock Check → Transfer → Reservation_ — legible in the demo video.
 
 ---
 
@@ -634,13 +659,18 @@ backend/src/
 > **Carry this bug fix forward.** Counterfoil's `validate` middleware does `Object.assign(req.query, parsed.query)`. Under **Express 5 that silently does nothing** — `req.query` is a getter that re-parses the querystring on every access, so the assignment mutates a throwaway object and every zod `.transform()` on a query param is dead code. It went unnoticed there because `Number(params.page)` works on a string anyway.
 >
 > Fix it properly in the new repo:
+>
 > ```ts
 > if (parsed.query !== undefined) {
->   Object.defineProperty(req, 'query', {
->     value: parsed.query, writable: true, configurable: true, enumerable: true,
+>   Object.defineProperty(req, "query", {
+>     value: parsed.query,
+>     writable: true,
+>     configurable: true,
+>     enumerable: true,
 >   });
 > }
 > ```
+>
 > This shadows the prototype getter with an own property. **Every query param a service reads must then be declared in that module's zod schema**, because zod strips undeclared keys — that is the trap that would otherwise bite you silently.
 
 **Layering rule:** controllers do HTTP only (parse → call service → respond). Services own business logic and Prisma. No Prisma in controllers, no `req`/`res` in services.
@@ -652,59 +682,64 @@ backend/src/
 Base `/api`. Everything except `/health`, `/docs` and `/auth/login` needs a bearer token.
 
 ### Auth
-| Method | Path | Roles |
-|---|---|---|
-| POST | `/auth/login` | public |
-| GET | `/auth/me` | any |
+
+| Method | Path          | Roles  |
+| ------ | ------------- | ------ |
+| POST   | `/auth/login` | public |
+| GET    | `/auth/me`    | any    |
 
 ### Inventory
-| Method | Path | Roles | Notes |
-|---|---|---|---|
-| GET | `/inventory` | any | `?page&limit&search&locationId&itemId&categoryId&lowStock`; returns physical, reserved, **available** |
-| GET | `/inventory/:id` | any | With recent movements |
-| POST | `/inventory/adjustments` | Admin, Operations | `{ inventoryItemId, type: IN\|OUT, quantity, reason }` |
-| GET | `/items` · `/locations` · `/categories` · `/batches` | any | Lookup lists for the pickers |
-| POST | `/items` · `/locations` · `/batches` | Admin, Operations | |
+
+| Method | Path                                                 | Roles             | Notes                                                                                                 |
+| ------ | ---------------------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------- |
+| GET    | `/inventory`                                         | any               | `?page&limit&search&locationId&itemId&categoryId&lowStock`; returns physical, reserved, **available** |
+| GET    | `/inventory/:id`                                     | any               | With recent movements                                                                                 |
+| POST   | `/inventory/adjustments`                             | Admin, Operations | `{ inventoryItemId, type: IN\|OUT, quantity, reason }`                                                |
+| GET    | `/items` · `/locations` · `/categories` · `/batches` | any               | Lookup lists for the pickers                                                                          |
+| POST   | `/items` · `/locations` · `/batches`                 | Admin, Operations |                                                                                                       |
 
 ### Work orders
-| Method | Path | Roles | Notes |
-|---|---|---|---|
-| GET | `/work-orders` | any | Each row includes computed `availableQty` + `shortageQty` |
-| POST | `/work-orders` | **Admin only** | |
-| GET | `/work-orders/:id` | any | |
-| PATCH | `/work-orders/:id/status` | Admin, Operations | `ASSIGNED → IN_PROGRESS → COMPLETED`, forward only |
+
+| Method | Path                      | Roles             | Notes                                                     |
+| ------ | ------------------------- | ----------------- | --------------------------------------------------------- |
+| GET    | `/work-orders`            | any               | Each row includes computed `availableQty` + `shortageQty` |
+| POST   | `/work-orders`            | **Admin only**    |                                                           |
+| GET    | `/work-orders/:id`        | any               |                                                           |
+| PATCH  | `/work-orders/:id/status` | Admin, Operations | `ASSIGNED → IN_PROGRESS → COMPLETED`, forward only        |
 
 ### Transfers
-| Method | Path | Roles | Notes |
-|---|---|---|---|
-| GET | `/transfers` | any | `?status&sourceLocationId&destinationLocationId` |
-| POST | `/transfers` | Admin, Operations | Creates `REQUESTED` |
-| POST | `/transfers/:id/dispatch` | Admin, Operations | Source decreases |
-| POST | `/transfers/:id/receive` | Admin, Operations | Destination increases; 409 on second call |
-| POST | `/transfers/:id/cancel` | Admin | Only while `REQUESTED` |
+
+| Method | Path                      | Roles             | Notes                                            |
+| ------ | ------------------------- | ----------------- | ------------------------------------------------ |
+| GET    | `/transfers`              | any               | `?status&sourceLocationId&destinationLocationId` |
+| POST   | `/transfers`              | Admin, Operations | Creates `REQUESTED`                              |
+| POST   | `/transfers/:id/dispatch` | Admin, Operations | Source decreases                                 |
+| POST   | `/transfers/:id/receive`  | Admin, Operations | Destination increases; 409 on second call        |
+| POST   | `/transfers/:id/cancel`   | Admin             | Only while `REQUESTED`                           |
 
 ### Customer orders
-| Method | Path | Roles | Notes |
-|---|---|---|---|
-| GET | `/orders` | any | |
-| POST | `/orders` | Admin, Sales | Creates `DRAFT` with lines |
-| POST | `/orders/:id/reserve` | Admin, Sales | **The concurrency path.** `DRAFT → RESERVED` |
-| POST | `/orders/:id/cancel` | Admin, Sales | Releases reservations |
-| GET | `/customers` · `POST /customers` | any / Admin, Sales | Backing list for the order form |
+
+| Method | Path                             | Roles              | Notes                                        |
+| ------ | -------------------------------- | ------------------ | -------------------------------------------- |
+| GET    | `/orders`                        | any                |                                              |
+| POST   | `/orders`                        | Admin, Sales       | Creates `DRAFT` with lines                   |
+| POST   | `/orders/:id/reserve`            | Admin, Sales       | **The concurrency path.** `DRAFT → RESERVED` |
+| POST   | `/orders/:id/cancel`             | Admin, Sales       | Releases reservations                        |
+| GET    | `/customers` · `POST /customers` | any / Admin, Sales | Backing list for the order form              |
 
 ### Envelope
 
 List: `{ data: [...], meta: { page, limit, total, totalPages } }`
 Error: `{ error: { code, message, details? } }`
 
-| Code | Used for |
-|---|---|
-| 400 | `VALIDATION_ERROR` |
-| 401 | `UNAUTHENTICATED` |
-| 403 | `FORBIDDEN` |
-| 404 | `NOT_FOUND` |
-| 409 | `INSUFFICIENT_AVAILABLE`, `ALREADY_RECEIVED`, `INVALID_STATUS_TRANSITION`, `DUPLICATE_SKU` |
-| 500 | `INTERNAL_ERROR` — never leaks a stack trace |
+| Code | Used for                                                                                   |
+| ---- | ------------------------------------------------------------------------------------------ |
+| 400  | `VALIDATION_ERROR`                                                                         |
+| 401  | `UNAUTHENTICATED`                                                                          |
+| 403  | `FORBIDDEN`                                                                                |
+| 404  | `NOT_FOUND`                                                                                |
+| 409  | `INSUFFICIENT_AVAILABLE`, `ALREADY_RECEIVED`, `INVALID_STATUS_TRANSITION`, `DUPLICATE_SKU` |
+| 500  | `INTERNAL_ERROR` — never leaks a stack trace                                               |
 
 ### Document codes
 
@@ -714,30 +749,30 @@ Error: `{ error: { code, message, details? } }`
 
 ## 10. Validation rules
 
-| Field | Rule |
-|---|---|
-| `email` | valid email, lowercased, trimmed |
-| `password` | min 8 on create; login checks non-empty |
-| `item.sku` | 2–50, `/^[A-Za-z0-9-_]+$/`, uppercased, unique |
-| `location.code` | 2–20, uppercased, unique |
-| any `quantity` | **integer ≥ 1** — rejects zero, negatives and decimals |
-| `requiredQty` | integer ≥ 1 |
+| Field              | Rule                                                    |
+| ------------------ | ------------------------------------------------------- |
+| `email`            | valid email, lowercased, trimmed                        |
+| `password`         | min 8 on create; login checks non-empty                 |
+| `item.sku`         | 2–50, `/^[A-Za-z0-9-_]+$/`, uppercased, unique          |
+| `location.code`    | 2–20, uppercased, unique                                |
+| any `quantity`     | **integer ≥ 1** — rejects zero, negatives and decimals  |
+| `requiredQty`      | integer ≥ 1                                             |
 | status transitions | enum + explicit allowed-transition map, never free-form |
-| `page` / `limit` | coerced int, `page ≥ 1`, `1 ≤ limit ≤ 100` |
+| `page` / `limit`   | coerced int, `page ≥ 1`, `1 ≤ limit ≤ 100`              |
 
-*"Invalid quantity"* is an explicit brief requirement — zero, negative and non-integer are all rejected at the schema, with a test.
+_"Invalid quantity"_ is an explicit brief requirement — zero, negative and non-integer are all rejected at the schema, with a test.
 
 ---
 
 ## 11. Frontend — exactly five screens
 
-| Route | Screen | Contents |
-|---|---|---|
-| `/login` | Login | Email + password, demo credentials hint |
-| `/inventory` | Inventory | Table: item, SKU, category, location, batch, physical, reserved, **available**. Filters: location, category, low-stock. "Adjust stock" modal (Admin/Ops) |
-| `/work-orders` | Work Orders | Table: code, location, item, required, available, **shortage**, assignee, status. "Create" (Admin). Status control. "Request transfer" when shortage > 0 |
-| `/transfers` | Transfers | Table: code, item, batch, source → destination, qty, status. Actions per status: Dispatch, Receive |
-| `/orders` | Customer Orders | Table: code, customer, lines, status. "Create order" → customer + location + line items with live availability. "Reserve" and "Cancel" |
+| Route          | Screen          | Contents                                                                                                                                                 |
+| -------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/login`       | Login           | Email + password, demo credentials hint                                                                                                                  |
+| `/inventory`   | Inventory       | Table: item, SKU, category, location, batch, physical, reserved, **available**. Filters: location, category, low-stock. "Adjust stock" modal (Admin/Ops) |
+| `/work-orders` | Work Orders     | Table: code, location, item, required, available, **shortage**, assignee, status. "Create" (Admin). Status control. "Request transfer" when shortage > 0 |
+| `/transfers`   | Transfers       | Table: code, item, batch, source → destination, qty, status. Actions per status: Dispatch, Receive                                                       |
+| `/orders`      | Customer Orders | Table: code, customer, lines, status. "Create order" → customer + location + line items with live availability. "Reserve" and "Cancel"                   |
 
 Lift Counterfoil's AppShell, Sidebar, auth store, `ProtectedRoute`, `permissions.ts`, axios client, TanStack Query setup and the entire UI kit. Retarget the sidebar to these five.
 
@@ -751,15 +786,16 @@ Do not build a dashboard. Do not port the CRM. The brief is explicit.
 
 Password for every account: `Password@123`. Put this table in the README.
 
-| Role | Email |
-|---|---|
-| Admin | `admin@erp.test` |
-| Operations | `ops@erp.test` |
-| Sales | `sales@erp.test` |
+| Role       | Email            |
+| ---------- | ---------------- |
+| Admin      | `admin@erp.test` |
+| Operations | `ops@erp.test`   |
+| Sales      | `sales@erp.test` |
 
 Reuse Counterfoil's seed **generator** (deterministic PRNG, plan-then-write, invariant assertions) — it is genuinely good and the ledger-consistency assertion applies directly. Replace the catalogue.
 
 Seed:
+
 - **3 locations** (`WH-MUM`, `WH-PUN`, `WH-DEL`) — three, so a transfer has a meaningful choice of source.
 - **4 categories**, **~20 items**, 1–2 batches each.
 - **Inventory rows across all three locations**, deliberately uneven — at least one item plentiful at one location and short at another, so the work-order shortage → transfer flow demos without setup.
@@ -777,33 +813,35 @@ Assert before writing: for every inventory row, `physicalQty === last movement's
 
 The five mandatory tests, as API-level supertest cases. Counterfoil's `tests/setup.ts` gives you user creation and login already.
 
-| # | Test | Asserts |
-|---|---|---|
-| 1 | Cannot reserve more than available | 409 `INSUFFICIENT_AVAILABLE`; `reservedQty` unchanged |
-| 2 | Cannot transfer more than available | 409; source `physicalQty` unchanged |
-| 3 | Destination increases only after receipt | After dispatch: source down, **destination unchanged**. After receipt: destination up |
-| 4 | Same transfer cannot be received twice | Second receive → 409; destination increased exactly once |
-| 5 | Unauthorized user cannot perform restricted action | Sales creating a work order → 403; Operations reserving → 403 |
+| #   | Test                                               | Asserts                                                                               |
+| --- | -------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| 1   | Cannot reserve more than available                 | 409 `INSUFFICIENT_AVAILABLE`; `reservedQty` unchanged                                 |
+| 2   | Cannot transfer more than available                | 409; source `physicalQty` unchanged                                                   |
+| 3   | Destination increases only after receipt           | After dispatch: source down, **destination unchanged**. After receipt: destination up |
+| 4   | Same transfer cannot be received twice             | Second receive → 409; destination increased exactly once                              |
+| 5   | Unauthorized user cannot perform restricted action | Sales creating a work order → 403; Operations reserving → 403                         |
 
 **Add a sixth, and lead the demo with it — the concurrency proof:**
 
 ```ts
-it('does not let two concurrent reservations exceed available stock', async () => {
+it("does not let two concurrent reservations exceed available stock", async () => {
   // available = 100
   const [a, b] = await Promise.allSettled([
-    reserve(orderA, 80),   // fired together, not sequentially
+    reserve(orderA, 80), // fired together, not sequentially
     reserve(orderB, 50),
   ]);
 
-  const ok = [a, b].filter(r => r.status === 'fulfilled' && r.value.status === 201);
-  expect(ok).toHaveLength(1);                       // exactly one wins
+  const ok = [a, b].filter(
+    (r) => r.status === "fulfilled" && r.value.status === 201,
+  );
+  expect(ok).toHaveLength(1); // exactly one wins
 
   const inv = await getInventory(itemId, locationId);
-  expect(inv.reservedQty).toBeLessThanOrEqual(inv.physicalQty);   // never oversold
+  expect(inv.reservedQty).toBeLessThanOrEqual(inv.physicalQty); // never oversold
 });
 ```
 
-This is the test that turns *"Both requests must not succeed"* from a claim into evidence. It is worth more than the other five combined in the conversation that follows.
+This is the test that turns _"Both requests must not succeed"_ from a claim into evidence. It is worth more than the other five combined in the conversation that follows.
 
 ---
 
@@ -811,20 +849,20 @@ This is the test that turns *"Both requests must not succeed"* from a claim into
 
 Estimated **~32 hours** with the platform reused. Each phase ends committed and working.
 
-| Phase | Hours | Deliverable | Commit |
-|---|---|---|---|
-| 1 | 0–2 | New repo. Platform lift: TS + ESLint, `env.ts`, `app.ts`, health, `AppError`, `errorHandler`, `validate` (**with the Express 5 fix**), auth middleware | `chore: scaffold platform from prior project` |
-| 2 | 2–5 | Full Prisma schema, first migration, seed generator + data | `feat: inventory domain schema and seed` |
-| 3 | 5–6 | Auth module, 3 roles, login rate limit | `feat: auth and role guards` |
-| 4 | 6–10 | Inventory module: read with computed available, adjustments, items/locations/batches | `feat: inventory module` |
-| 5 | **10–14** | **Reservation engine (§5) + concurrency test** | `feat: stock reservation with concurrency guard` |
-| 6 | 14–18 | Transfers: request, dispatch, receive, idempotency | `feat: internal stock transfers` |
-| 7 | 18–21 | Work orders + shortage calculation | `feat: work orders and shortage` |
-| 8 | 21–23 | Customer orders: create, reserve, cancel + release | `feat: customer orders and reservations` |
-| 9 | 23–25 | All 6 tests green | `test: inventory and transfer invariants` |
-| 10 | 25–28 | Frontend: shell lift + 5 screens wired | `feat: operations ui` |
-| 11 | 28–30 | Deploy Neon → Render → Vercel; seed production | `chore: production deployment` |
-| 12 | 30–32 | README, Mermaid ER diagram, OpenAPI at `/api/docs`, demo video | `docs: readme, er diagram and api docs` |
+| Phase | Hours     | Deliverable                                                                                                                                            | Commit                                           |
+| ----- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------ |
+| 1     | 0–2       | New repo. Platform lift: TS + ESLint, `env.ts`, `app.ts`, health, `AppError`, `errorHandler`, `validate` (**with the Express 5 fix**), auth middleware | `chore: scaffold platform from prior project`    |
+| 2     | 2–5       | Full Prisma schema, first migration, seed generator + data                                                                                             | `feat: inventory domain schema and seed`         |
+| 3     | 5–6       | Auth module, 3 roles, login rate limit                                                                                                                 | `feat: auth and role guards`                     |
+| 4     | 6–10      | Inventory module: read with computed available, adjustments, items/locations/batches                                                                   | `feat: inventory module`                         |
+| 5     | **10–14** | **Reservation engine (§5) + concurrency test**                                                                                                         | `feat: stock reservation with concurrency guard` |
+| 6     | 14–18     | Transfers: request, dispatch, receive, idempotency                                                                                                     | `feat: internal stock transfers`                 |
+| 7     | 18–21     | Work orders + shortage calculation                                                                                                                     | `feat: work orders and shortage`                 |
+| 8     | 21–23     | Customer orders: create, reserve, cancel + release                                                                                                     | `feat: customer orders and reservations`         |
+| 9     | 23–25     | All 6 tests green                                                                                                                                      | `test: inventory and transfer invariants`        |
+| 10    | 25–28     | Frontend: shell lift + 5 screens wired                                                                                                                 | `feat: operations ui`                            |
+| 11    | 28–30     | Deploy Neon → Render → Vercel; seed production                                                                                                         | `chore: production deployment`                   |
+| 12    | 30–32     | README, Mermaid ER diagram, OpenAPI at `/api/docs`, demo video                                                                                         | `docs: readme, er diagram and api docs`          |
 
 **Phase 5 before everything else that touches stock.** It is the assignment. If the reservation guard is not provably correct, no amount of UI recovers those 35 marks.
 
@@ -837,12 +875,12 @@ Estimated **~32 hours** with the platform reused. Each phase ends committed and 
 
 The brief publishes the four changes they may ask for. Each one should already be a small diff. **Do not build them** — build so they are cheap, then say so in the README.
 
-| Change | Why it is already cheap | Work |
-|---|---|---|
-| **1. Add `DAMAGED`, reducing available** | Availability is computed in one helper | Add `damagedQty` column + one migration; change the helper to `physical − reserved − damaged`; add a `DAMAGE` movement reason | ~30 min |
-| **2. Partial transfer receipt** | Transfer already carries `dispatchedQty` / `receivedQty` | Allow `receivedQty < dispatchedQty`, add `PARTIALLY_RECEIVED` status, change the guard to `receivedQty < dispatchedQty` | ~45 min |
-| **3. Cancel order, release reservations** | `StockReservation` ledger + `releaseOrder()` | **Already built** in §5.4 | 0 |
-| **4. Restrict users to their location** | `User.locationId` exists from day one | Add a `scopeToUserLocation()` helper applied in the inventory/transfer/work-order list queries + a guard on writes | ~1 h |
+| Change                                    | Why it is already cheap                                  | Work                                                                                                                          |
+| ----------------------------------------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| **1. Add `DAMAGED`, reducing available**  | Availability is computed in one helper                   | Add `damagedQty` column + one migration; change the helper to `physical − reserved − damaged`; add a `DAMAGE` movement reason | ~30 min |
+| **2. Partial transfer receipt**           | Transfer already carries `dispatchedQty` / `receivedQty` | Allow `receivedQty < dispatchedQty`, add `PARTIALLY_RECEIVED` status, change the guard to `receivedQty < dispatchedQty`       | ~45 min |
+| **3. Cancel order, release reservations** | `StockReservation` ledger + `releaseOrder()`             | **Already built** in §5.4                                                                                                     | 0       |
+| **4. Restrict users to their location**   | `User.locationId` exists from day one                    | Add a `scopeToUserLocation()` helper applied in the inventory/transfer/work-order list queries + a guard on writes            | ~1 h    |
 
 Put this table in the README under "Extensibility". It tells the reviewer you read the brief and designed against it, which is the whole point of that section.
 
@@ -887,7 +925,7 @@ Put this table in the README under "Extensibility". It tells the reviewer you re
 
 ## 18. One thing to rehearse before the interview
 
-The brief is explicit: *"If you cannot modify or explain your own application, the submission will not qualify."*
+The brief is explicit: _"If you cannot modify or explain your own application, the submission will not qualify."_
 
 Be able to answer these three without looking:
 

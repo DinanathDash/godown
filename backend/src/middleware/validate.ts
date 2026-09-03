@@ -12,7 +12,14 @@ export const validate = (schema: ZodObject<any, any>) => {
       });
 
       if (parsed.body !== undefined) req.body = parsed.body;
-      if (parsed.query !== undefined) Object.assign(req.query, parsed.query);
+      if (parsed.query !== undefined) {
+        Object.defineProperty(req, 'query', {
+          value: parsed.query,
+          writable: true,
+          configurable: true,
+          enumerable: true,
+        });
+      }
       if (parsed.params !== undefined) Object.assign(req.params, parsed.params);
 
       next();

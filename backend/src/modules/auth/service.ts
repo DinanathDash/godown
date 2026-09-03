@@ -22,6 +22,7 @@ export const login = async (email: string, password: string) => {
     sub: user.id,
     role: user.role,
     email: user.email,
+    locationId: user.locationId,
   });
 
   return {
@@ -31,6 +32,7 @@ export const login = async (email: string, password: string) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      locationId: user.locationId,
     },
   };
 };
@@ -43,6 +45,7 @@ export const getMe = async (userId: string) => {
       name: true,
       email: true,
       role: true,
+      locationId: true,
       isActive: true,
       createdAt: true,
     },

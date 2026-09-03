@@ -1,6 +1,6 @@
-# Counterfoil Architecture
+# Godown Architecture
 
-Counterfoil is a full-stack monolithic web application divided into a Node.js Express backend and a Next.js React frontend. The application uses PostgreSQL as its primary datastore and Prisma as its ORM.
+Godown is a full-stack monolithic web application divided into a Node.js Express backend and a Next.js React frontend. The application uses PostgreSQL as its primary datastore and Prisma as its ORM.
 
 ## Tech Stack
 
