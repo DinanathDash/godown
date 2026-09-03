@@ -1,4 +1,4 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["src/**/*", "tests/**/*", "vitest.config.ts", "prisma/seed.ts"]
+  "include": ["src/**/*", "tests/**/*", "vitest.config.ts", "prisma/seed.ts", "eslint.config.mjs"]
 }
