@@ -35,12 +35,13 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Package, Search } from "lucide-react";
+import { toast } from "@/components/ui/toast";
+import { RoleGate } from "@/auth/RoleGate";
 
 const HEAD = "text-[12px] font-medium text-muted-foreground tracking-wider";
 const CARD =
   "bg-card shadow-sm border-[0.5px] border-border/50 rounded-2xl overflow-hidden";
-const CONTROL =
-  "h-9 rounded-[10px] shadow-sm border-[0.5px] border-border/50";
+const CONTROL = "h-9 rounded-[10px] shadow-sm border-[0.5px] border-border/50";
 
 type Availability = "ALL" | "IN_STOCK" | "OUT_OF_STOCK";
 
@@ -110,19 +111,51 @@ export function InventoryTable() {
     setPage(1);
   };
 
-  const handleAdjust = async () => {
-    if (!selectedItem) return;
-    await adjustStock.mutateAsync({
-      inventoryItemId: selectedItem,
-      type: adjustType,
-      quantity: Number(quantity),
-      reason,
-    });
-    setIsOpen(false);
-  };
-
   const meta = data?.meta;
   const rows = data?.data ?? [];
+
+  // Mirrors the server's own rules (adjustStockSchema requires a positive
+  // integer quantity and a reason of 3+ characters) so the form can say what
+  // is missing instead of spending a round trip to be told 400.
+  const activeRow = rows.find((r) => r.id === selectedItem);
+  const trimmedReason = reason.trim();
+  const validationError =
+    !Number.isFinite(quantity) || quantity < 1
+      ? "Enter a quantity of at least 1."
+      : trimmedReason.length < 3
+        ? "Give a reason of at least 3 characters."
+        : adjustType === "OUT" && activeRow && quantity > activeRow.availableQty
+          ? `Only ${activeRow.availableQty} available to remove.`
+          : null;
+
+  const handleAdjust = async () => {
+    if (!selectedItem || validationError) return;
+    try {
+      await adjustStock.mutateAsync({
+        inventoryItemId: selectedItem,
+        type: adjustType,
+        quantity,
+        reason: trimmedReason,
+      });
+      toast.add({
+        title: adjustType === "IN" ? "Stock added" : "Stock removed",
+        description: `${quantity} ${activeRow?.item.uom ?? "units"} on ${activeRow?.item.sku ?? "this item"}.`,
+      });
+      setIsOpen(false);
+    } catch (err: unknown) {
+      const error = err as {
+        response?: { data?: { error?: { message?: string } } };
+      };
+      // Without this the mutation rejected unhandled: the dialog stayed open,
+      // nothing changed, and the reason never reached the user.
+      toast.add({
+        title: "Could not adjust stock",
+        description:
+          error.response?.data?.error?.message ?? "Please try again.",
+        type: "error",
+      });
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -142,7 +175,10 @@ export function InventoryTable() {
           />
         </div>
 
-        <Select value={locationId} onValueChange={onFilterChange(setLocationId)}>
+        <Select
+          value={locationId}
+          onValueChange={onFilterChange(setLocationId)}
+        >
           <SelectTrigger className={`w-[170px] ${CONTROL}`}>
             <SelectValue placeholder="Location" />
           </SelectTrigger>
@@ -156,7 +192,10 @@ export function InventoryTable() {
           </SelectContent>
         </Select>
 
-        <Select value={categoryId} onValueChange={onFilterChange(setCategoryId)}>
+        <Select
+          value={categoryId}
+          onValueChange={onFilterChange(setCategoryId)}
+        >
           <SelectTrigger className={`w-[160px] ${CONTROL}`}>
             <SelectValue placeholder="Category" />
           </SelectTrigger>
@@ -206,14 +245,30 @@ export function InventoryTable() {
             {isLoading &&
               Array.from({ length: 6 }).map((_, i) => (
                 <TableRow key={i} className="border-b-[0.5px] border-border/50">
-                  <TableCell className="pl-5"><Skeleton className="h-4 w-20" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-44" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-10 ml-auto" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-10 ml-auto" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-10 ml-auto" /></TableCell>
-                  <TableCell className="pr-5"><Skeleton className="h-8 w-16 ml-auto rounded-[10px]" /></TableCell>
+                  <TableCell className="pl-5">
+                    <Skeleton className="h-4 w-20" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-44" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-16" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-20" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-10 ml-auto" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-10 ml-auto" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-10 ml-auto" />
+                  </TableCell>
+                  <TableCell className="pr-5">
+                    <Skeleton className="h-8 w-16 ml-auto rounded-[10px]" />
+                  </TableCell>
                 </TableRow>
               ))}
 
@@ -225,7 +280,9 @@ export function InventoryTable() {
                     strokeWidth={1}
                   />
                   <p className="font-medium text-[13px] text-ink">
-                    {isFiltered ? "Nothing matches those filters" : "No stock recorded yet"}
+                    {isFiltered
+                      ? "Nothing matches those filters"
+                      : "No stock recorded yet"}
                   </p>
                   <p className="text-[13px] leading-tight text-muted-foreground mt-1">
                     {isFiltered
@@ -271,83 +328,107 @@ export function InventoryTable() {
                     {item.availableQty}
                   </TableCell>
                   <TableCell className="text-right pr-5">
-                    <Dialog
-                      open={isOpen && selectedItem === item.id}
-                      onOpenChange={(val) => {
-                        setIsOpen(val);
-                        if (val) setSelectedItem(item.id);
-                        else setSelectedItem(null);
-                      }}
-                    >
-                      <DialogTrigger
-                        render={
-                          <Button
-                            variant="outline"
-                            className="rounded-[10px] h-8 text-[12px] shadow-sm border-[0.5px] border-border/50"
-                          />
-                        }
+                    <RoleGate permission="ADJUST_INVENTORY">
+                      <Dialog
+                        open={isOpen && selectedItem === item.id}
+                        onOpenChange={(val) => {
+                          setIsOpen(val);
+                          setSelectedItem(val ? item.id : null);
+                          // The fields are shared by every row's dialog, so a
+                          // reason typed against the last row must not ride
+                          // along into this one.
+                          if (val) {
+                            setAdjustType("IN");
+                            setQuantity(1);
+                            setReason("");
+                          }
+                        }}
                       >
-                        Adjust
-                      </DialogTrigger>
-                      <DialogContent className="rounded-2xl">
-                        <DialogHeader>
-                          <DialogTitle>
-                            Adjust stock — {item.item.sku}
-                          </DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4 py-2">
-                          <div className="space-y-2">
-                            <Label>Type</Label>
-                            <Select
-                              value={adjustType}
-                              onValueChange={(v) =>
-                                setAdjustType(v as "IN" | "OUT")
+                        <DialogTrigger
+                          render={
+                            <Button
+                              variant="outline"
+                              className="rounded-[10px] h-8 text-[12px] shadow-sm border-[0.5px] border-border/50"
+                            />
+                          }
+                        >
+                          Adjust
+                        </DialogTrigger>
+                        <DialogContent className="rounded-2xl">
+                          <DialogHeader>
+                            <DialogTitle>
+                              Adjust stock — {item.item.sku}
+                            </DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4 py-2">
+                            <div className="space-y-2">
+                              <Label>Type</Label>
+                              <Select
+                                value={adjustType}
+                                onValueChange={(v) =>
+                                  setAdjustType(v as "IN" | "OUT")
+                                }
+                              >
+                                <SelectTrigger className={CONTROL}>
+                                  <SelectValue placeholder="Select type" />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-[10px]">
+                                  <SelectItem value="IN">
+                                    IN — add stock
+                                  </SelectItem>
+                                  <SelectItem value="OUT">
+                                    OUT — remove stock
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>
+                                Quantity
+                                <span className="ml-2 font-normal text-muted-foreground tabular-nums">
+                                  {item.availableQty} available
+                                </span>
+                              </Label>
+                              <Input
+                                type="number"
+                                min="1"
+                                className={CONTROL}
+                                value={quantity}
+                                onChange={(e) =>
+                                  setQuantity(Number(e.target.value))
+                                }
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Reason</Label>
+                              <Input
+                                placeholder="Stock count correction, damage, return…"
+                                className={CONTROL}
+                                value={reason}
+                                onChange={(e) => setReason(e.target.value)}
+                              />
+                            </div>
+                            {validationError && (
+                              <p className="text-[13px] leading-tight text-muted-foreground">
+                                {validationError}
+                              </p>
+                            )}
+                            <Button
+                              onClick={handleAdjust}
+                              className="w-full rounded-[10px] h-9 shadow-sm"
+                              disabled={
+                                adjustStock.isPending ||
+                                validationError !== null
                               }
                             >
-                              <SelectTrigger className={CONTROL}>
-                                <SelectValue placeholder="Select type" />
-                              </SelectTrigger>
-                              <SelectContent className="rounded-[10px]">
-                                <SelectItem value="IN">IN — add stock</SelectItem>
-                                <SelectItem value="OUT">
-                                  OUT — remove stock
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
+                              {adjustStock.isPending
+                                ? "Adjusting…"
+                                : "Confirm adjustment"}
+                            </Button>
                           </div>
-                          <div className="space-y-2">
-                            <Label>Quantity</Label>
-                            <Input
-                              type="number"
-                              min="1"
-                              className={CONTROL}
-                              value={quantity}
-                              onChange={(e) =>
-                                setQuantity(Number(e.target.value))
-                              }
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Reason</Label>
-                            <Input
-                              placeholder="Stock count correction, damage, return…"
-                              className={CONTROL}
-                              value={reason}
-                              onChange={(e) => setReason(e.target.value)}
-                            />
-                          </div>
-                          <Button
-                            onClick={handleAdjust}
-                            className="w-full rounded-[10px] h-9 shadow-sm"
-                            disabled={adjustStock.isPending}
-                          >
-                            {adjustStock.isPending
-                              ? "Adjusting…"
-                              : "Confirm adjustment"}
-                          </Button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
+                        </DialogContent>
+                      </Dialog>
+                    </RoleGate>
                   </TableCell>
                 </TableRow>
               ))}

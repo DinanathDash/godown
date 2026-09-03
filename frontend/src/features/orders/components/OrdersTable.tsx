@@ -95,29 +95,39 @@ export function OrdersTable() {
     });
   };
 
-  const execute = () => {
+  // Reserving walks every line against locked inventory rows, so it is not
+  // instant. The dialog used to close the moment it was clicked and then say
+  // nothing for several seconds, which is indistinguishable from a dead
+  // button — so it stays open, and busy, until the table behind it is current.
+  const isBusy = reserveOrder.isPending || cancelOrder.isPending;
+
+  const execute = async () => {
     if (!pending) return;
     const { order, action } = pending;
-    setPending(null);
 
-    if (action === "RESERVE") {
-      reserveOrder.mutate(order.id, {
-        onSuccess: () =>
-          toast.add({
-            title: "Stock reserved",
-            description: `${order.code} now holds its stock against available quantity.`,
-          }),
-        onError: (err) => onError(err, "Could not reserve stock"),
-      });
-    } else {
-      cancelOrder.mutate(order.id, {
-        onSuccess: () =>
-          toast.add({
-            title: "Order cancelled",
-            description: `Any stock reserved by ${order.code} has been released.`,
-          }),
-        onError: (err) => onError(err, "Could not cancel order"),
-      });
+    try {
+      if (action === "RESERVE") {
+        await reserveOrder.mutateAsync(order.id);
+        toast.add({
+          title: "Stock reserved",
+          description: `${order.code} now holds its stock against available quantity.`,
+        });
+      } else {
+        await cancelOrder.mutateAsync(order.id);
+        toast.add({
+          title: "Order cancelled",
+          description: `Any stock reserved by ${order.code} has been released.`,
+        });
+      }
+    } catch (err) {
+      onError(
+        err,
+        action === "RESERVE"
+          ? "Could not reserve stock"
+          : "Could not cancel order",
+      );
+    } finally {
+      setPending(null);
     }
   };
 
@@ -132,18 +142,32 @@ export function OrdersTable() {
               <TableHead className={HEAD}>Location</TableHead>
               <TableHead className={HEAD}>Lines</TableHead>
               <TableHead className={HEAD}>Status</TableHead>
-              <TableHead className={`${HEAD} text-right pr-5`}>Actions</TableHead>
+              <TableHead className={`${HEAD} text-right pr-5`}>
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {Array.from({ length: 5 }).map((_, i) => (
               <TableRow key={i} className="border-b-[0.5px] border-border/50">
-                <TableCell className="pl-5"><Skeleton className="h-4 w-28" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-36" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-44" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-20 rounded-[6px]" /></TableCell>
-                <TableCell className="pr-5"><Skeleton className="h-8 w-24 ml-auto rounded-[10px]" /></TableCell>
+                <TableCell className="pl-5">
+                  <Skeleton className="h-4 w-28" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-36" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-16" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-44" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5 w-20 rounded-[6px]" />
+                </TableCell>
+                <TableCell className="pr-5">
+                  <Skeleton className="h-8 w-24 ml-auto rounded-[10px]" />
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -159,7 +183,9 @@ export function OrdersTable() {
           className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3"
           strokeWidth={1}
         />
-        <p className="font-medium text-[13px] text-ink">No customer orders yet</p>
+        <p className="font-medium text-[13px] text-ink">
+          No customer orders yet
+        </p>
         <p className="text-[13px] leading-tight text-muted-foreground mt-1">
           Create one to reserve stock against a customer.
         </p>
@@ -178,7 +204,9 @@ export function OrdersTable() {
               <TableHead className={HEAD}>Location</TableHead>
               <TableHead className={HEAD}>Lines</TableHead>
               <TableHead className={HEAD}>Status</TableHead>
-              <TableHead className={`${HEAD} text-right pr-5`}>Actions</TableHead>
+              <TableHead className={`${HEAD} text-right pr-5`}>
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -230,7 +258,9 @@ export function OrdersTable() {
                         order.status === "RESERVED") && (
                         <Button
                           variant="outline"
-                          onClick={() => setPending({ order, action: "CANCEL" })}
+                          onClick={() =>
+                            setPending({ order, action: "CANCEL" })
+                          }
                           disabled={cancelOrder.isPending}
                           className="rounded-[10px] h-8 text-[12px] shadow-sm border-[0.5px] border-border/50"
                         >
@@ -247,7 +277,11 @@ export function OrdersTable() {
 
       <AlertDialog
         open={pending !== null}
-        onOpenChange={(open) => !open && setPending(null)}
+        onOpenChange={(open) => {
+          // Closing mid-flight would drop the user back onto a table that has
+          // not caught up yet.
+          if (!open && !isBusy) setPending(null);
+        }}
       >
         <AlertDialogContent className="rounded-[12px]">
           <AlertDialogHeader>
@@ -263,18 +297,23 @@ export function OrdersTable() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-[10px]">
+            <AlertDialogCancel className="rounded-[10px]" disabled={isBusy}>
               Go back
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={execute}
+              disabled={isBusy}
               className={`rounded-[10px] ${
                 pending?.action === "CANCEL"
                   ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   : "bg-emerald-600 text-white hover:bg-emerald-700"
               }`}
             >
-              {pending?.action === "RESERVE" ? "Reserve stock" : "Cancel order"}
+              {isBusy
+                ? "Working…"
+                : pending?.action === "RESERVE"
+                  ? "Reserve stock"
+                  : "Cancel order"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

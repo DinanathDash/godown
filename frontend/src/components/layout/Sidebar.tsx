@@ -393,10 +393,10 @@ export function Sidebar() {
             {!isCollapsed && (
               <div className="flex flex-col whitespace-nowrap">
                 <span className="text-[13px] font-semibold text-ink leading-tight">
-                  {user?.name || "Wei Chen"}
+                  {user?.name ?? "Signed in"}
                 </span>
                 <span className="text-[11px] text-muted-foreground font-medium leading-tight truncate max-w-[120px]">
-                  {user?.email || "wei@godown.app"}
+                  {user?.email ?? ""}
                 </span>
               </div>
             )}

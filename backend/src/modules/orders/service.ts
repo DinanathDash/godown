@@ -1,5 +1,6 @@
 import { prisma } from '../../lib/prisma';
 import { AppError } from '../../utils/AppError';
+import { Prisma } from '@prisma/client';
 
 export async function getOrders(query: { page: number; limit: number }) {
   const { page, limit } = query;
@@ -66,6 +67,15 @@ export async function createOrder(data: {
   );
 }
 
+/**
+ * Holds stock against an order without moving it.
+ *
+ * Every statement here is a round trip to a remote Postgres, and the earlier
+ * shape made one per batch per line: a three-line order spent ~7 seconds
+ * inside the transaction, which read to the user as "nothing happened". The
+ * work is the same, but it is now planned in memory and written in two
+ * statements, so the whole thing is a handful of round trips.
+ */
 export async function reserveOrder(orderId: string) {
   return prisma.$transaction(
     async (tx) => {
@@ -79,21 +89,44 @@ export async function reserveOrder(orderId: string) {
         throw new AppError(409, 'INVALID_STATUS_TRANSITION', 'Only DRAFT orders can be reserved');
       }
 
-      // Attempt to reserve stock for every line. If one fails, the entire transaction rolls back automatically
-      // because an AppError will be thrown.
-      for (const line of order.lines) {
-        const rows = await tx.$queryRaw<{ id: string; available: number }[]>`
-        SELECT i.id, i."physicalQty" - i."reservedQty" AS available
+      const itemIds = [...new Set(order.lines.map((l) => l.itemId))];
+
+      // One locking read covering every item on the order. Taking all the locks
+      // in a single statement with a deterministic ORDER BY also gives every
+      // concurrent reservation the same lock order, so two orders competing for
+      // the same batches queue up instead of deadlocking.
+      const rows =
+        itemIds.length === 0
+          ? []
+          : await tx.$queryRaw<{ id: string; itemId: string; available: number }[]>`
+        SELECT i.id, i."itemId", i."physicalQty" - i."reservedQty" AS available
         FROM inventory_items i
         JOIN batches b ON b.id = i."batchId"
-        WHERE i."itemId" = ${line.itemId}
+        WHERE i."itemId" IN (${Prisma.join(itemIds)})
           AND i."locationId" = ${order.locationId}
           AND i."physicalQty" - i."reservedQty" > 0
         ORDER BY b."expiryDate" ASC NULLS LAST, i.id ASC
         FOR UPDATE OF i
       `;
 
-        const totalAvailable = rows.reduce((sum, r) => sum + Number(r.available), 0);
+      const byItem = new Map<string, { id: string; available: number }[]>();
+      for (const row of rows) {
+        const list = byItem.get(row.itemId) ?? [];
+        list.push({ id: row.id, available: Number(row.available) });
+        byItem.set(row.itemId, list);
+      }
+
+      // Plan the whole allocation before writing anything, oldest batch first.
+      const allocations: {
+        orderLineId: string;
+        inventoryItemId: string;
+        quantity: number;
+      }[] = [];
+
+      for (const line of order.lines) {
+        const candidates = byItem.get(line.itemId) ?? [];
+        const totalAvailable = candidates.reduce((sum, c) => sum + c.available, 0);
+
         if (totalAvailable < line.quantity) {
           throw new AppError(
             409,
@@ -109,30 +142,43 @@ export async function reserveOrder(orderId: string) {
           );
         }
 
-        // Allocate across batches, oldest first.
         let remaining = line.quantity;
-        for (const row of rows) {
+        for (const candidate of candidates) {
           if (remaining === 0) break;
-          const take = Math.min(remaining, Number(row.available));
+          const take = Math.min(remaining, candidate.available);
+          if (take === 0) continue;
 
-          await tx.inventoryItem.update({
-            where: { id: row.id },
-            data: { reservedQty: { increment: take } },
+          // Spend it in memory too: two lines for the same item must not both
+          // be allowed to claim the same units.
+          candidate.available -= take;
+          allocations.push({
+            orderLineId: line.id,
+            inventoryItemId: candidate.id,
+            quantity: take,
           });
-
-          await tx.stockReservation.create({
-            data: {
-              orderLineId: line.id,
-              inventoryItemId: row.id,
-              quantity: take,
-            },
-          });
-
           remaining -= take;
         }
       }
 
-      // Update the order status to RESERVED
+      if (allocations.length > 0) {
+        const increments = new Map<string, number>();
+        for (const a of allocations) {
+          increments.set(a.inventoryItemId, (increments.get(a.inventoryItemId) ?? 0) + a.quantity);
+        }
+
+        // Every increment in one statement, rather than an UPDATE per batch.
+        await tx.$executeRaw`
+          UPDATE inventory_items i
+          SET "reservedQty" = i."reservedQty" + v.qty
+          FROM (VALUES ${Prisma.join(
+            [...increments].map(([id, qty]) => Prisma.sql`(${id}::text, ${qty}::int)`),
+          )}) AS v(id, qty)
+          WHERE i.id = v.id
+        `;
+
+        await tx.stockReservation.createMany({ data: allocations });
+      }
+
       return tx.customerOrder.update({
         where: { id: orderId },
         data: { status: 'RESERVED', reservedAt: new Date() },

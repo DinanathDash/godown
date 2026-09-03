@@ -65,10 +65,14 @@ export function useReserveOrder() {
       const res = await apiClient.post(`/orders/${id}/reserve`);
       return res.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      queryClient.invalidateQueries({ queryKey: ["inventory"] });
-    },
+    // Returned, not fired and forgotten: the mutation stays pending until the
+    // refetch lands, so the caller can hold its confirmation open until the
+    // table below it is actually showing the new state.
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["orders"] }),
+        queryClient.invalidateQueries({ queryKey: ["inventory"] }),
+      ]),
   });
 }
 
@@ -79,10 +83,11 @@ export function useCancelOrder() {
       const res = await apiClient.post(`/orders/${id}/cancel`);
       return res.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      queryClient.invalidateQueries({ queryKey: ["inventory"] });
-    },
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["orders"] }),
+        queryClient.invalidateQueries({ queryKey: ["inventory"] }),
+      ]),
   });
 }
 
@@ -91,21 +96,10 @@ export function useCustomers() {
   return useQuery({
     queryKey: ["customers"],
     queryFn: async () => {
-      // Create a mock fallback since the backend doesn't have a /customers endpoint in the new specs
-      try {
-        const res = await apiClient.get<{
-          data: { id: string; name: string; businessName: string | null }[];
-        }>("/customers");
-        return res.data.data;
-      } catch {
-        return [
-          {
-            id: "mock-customer-1",
-            name: "Acme Corp",
-            businessName: "Acme Corp",
-          },
-        ];
-      }
+      const res = await apiClient.get<{
+        data: { id: string; name: string; businessName: string | null }[];
+      }>("/customers");
+      return res.data.data;
     },
   });
 }

@@ -28,7 +28,7 @@ import {
   Shield,
   Briefcase,
   Package,
-  Calculator,
+  Warehouse,
   Command,
 } from "lucide-react";
 import Image from "next/image";
@@ -39,6 +39,19 @@ const loginSchema = z.object({
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
+
+/**
+ * Quick sign-in for the demo. These must match the users in
+ * backend/prisma/seed-data.json. They are listed here once rather than inlined
+ * per button so the two cannot drift apart again.
+ */
+const DEMO_PASSWORD = "Password@123";
+const DEMO_ACCOUNTS = [
+  { label: "Admin", email: "admin@godown.test", icon: Shield },
+  { label: "Sales", email: "sales@godown.test", icon: Briefcase },
+  { label: "Ops · Mumbai", email: "ops@godown.test", icon: Package },
+  { label: "Ops · Pune", email: "ops.pune@godown.test", icon: Warehouse },
+] as const;
 
 export default function LoginPage() {
   const [error, setError] = useState("");
@@ -129,54 +142,19 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {/* Dummy Login Quick Buttons */}
             <div className="grid grid-cols-2 gap-3 mb-2">
-              <Button
-                variant="outline"
-                type="button"
-                onClick={() =>
-                  fillDummy("aarti.admin@godown.test", "Password@123")
-                }
-                className="h-11 border-neutral-200 hover:bg-neutral-50 text-muted-foreground hover:text-ink transition-colors flex items-center justify-center gap-2"
-                title="Admin Account"
-              >
-                <Shield className="w-4 h-4" />
-                <span className="text-sm font-medium">Admin</span>
-              </Button>
-              <Button
-                variant="outline"
-                type="button"
-                onClick={() =>
-                  fillDummy("nikhil.sales@godown.test", "Password@123")
-                }
-                className="h-11 border-neutral-200 hover:bg-neutral-50 text-muted-foreground hover:text-ink transition-colors flex items-center justify-center gap-2"
-                title="Sales Account"
-              >
-                <Briefcase className="w-4 h-4" />
-                <span className="text-sm font-medium">Sales</span>
-              </Button>
-              <Button
-                variant="outline"
-                type="button"
-                onClick={() =>
-                  fillDummy("suresh.warehouse@godown.test", "Password@123")
-                }
-                className="h-11 border-neutral-200 hover:bg-neutral-50 text-muted-foreground hover:text-ink transition-colors flex items-center justify-center gap-2"
-                title="Warehouse Account"
-              >
-                <Package className="w-4 h-4" />
-                <span className="text-sm font-medium">Warehouse</span>
-              </Button>
-              <Button
-                variant="outline"
-                type="button"
-                onClick={() =>
-                  fillDummy("meera.accounts@godown.test", "Password@123")
-                }
-                className="h-11 border-neutral-200 hover:bg-neutral-50 text-muted-foreground hover:text-ink transition-colors flex items-center justify-center gap-2"
-                title="Accounts Account"
-              >
-                <Calculator className="w-4 h-4" />
-                <span className="text-sm font-medium">Accounts</span>
-              </Button>
+              {DEMO_ACCOUNTS.map(({ label, email, icon: Icon }) => (
+                <Button
+                  key={email}
+                  variant="outline"
+                  type="button"
+                  onClick={() => fillDummy(email, DEMO_PASSWORD)}
+                  className="h-11 border-neutral-200 hover:bg-neutral-50 text-muted-foreground hover:text-ink transition-colors flex items-center justify-center gap-2"
+                  title={email}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span className="text-sm font-medium">{label}</span>
+                </Button>
+              ))}
             </div>
 
             <div className="flex items-center gap-4 py-3">
@@ -206,7 +184,7 @@ export default function LoginPage() {
                 <InputGroupInput
                   id="email"
                   type="email"
-                  placeholder="hello@godown.app"
+                  placeholder="you@godown.test"
                   {...register("email")}
                 />
               </InputGroup>
