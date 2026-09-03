@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
   Package,
   FileText,
   Settings,
@@ -50,18 +49,6 @@ type NavGroup = {
 };
 
 const navGroups: NavGroup[] = [
-  {
-    label: "Main",
-    items: [
-      {
-        title: "Dashboard",
-        href: "/",
-        icon: LayoutDashboard,
-        badge: 2,
-        requiredPermission: "VIEW_DASHBOARD",
-      },
-    ],
-  },
   {
     label: "Operations",
     items: [

@@ -7,6 +7,9 @@ export interface GetInventoryParams {
   limit?: number;
   locationId?: string;
   itemId?: string;
+  categoryId?: string;
+  search?: string;
+  availability?: "ALL" | "IN_STOCK" | "OUT_OF_STOCK";
 }
 
 export const useInventory = (params: GetInventoryParams) => {
@@ -42,3 +45,28 @@ export const useAdjustStock = () => {
     },
   });
 };
+
+/** Reference lists for the filter selects. Small and stable, so cached hard. */
+export const useLocations = () =>
+  useQuery({
+    queryKey: ["locations"],
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const { data } = await apiClient.get<{
+        data: { id: string; code: string; name: string }[];
+      }>("/locations");
+      return data.data;
+    },
+  });
+
+export const useCategories = () =>
+  useQuery({
+    queryKey: ["categories"],
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const { data } = await apiClient.get<{ data: { id: string; name: string }[] }>(
+        "/categories",
+      );
+      return data.data;
+    },
+  });

@@ -5,14 +5,38 @@ import { Prisma } from '@prisma/client';
 export const getInventory = async (filters: {
   locationId?: string;
   itemId?: string;
+  categoryId?: string;
+  search?: string;
+  availability?: 'ALL' | 'IN_STOCK' | 'OUT_OF_STOCK';
   page: number;
   limit: number;
 }) => {
-  const { locationId, itemId, page, limit } = filters;
+  const { locationId, itemId, categoryId, search, availability, page, limit } = filters;
+
+  // available = physicalQty - reservedQty, so filtering on availability is a
+  // column-to-column comparison. Prisma field references express that natively;
+  // no raw SQL needed for a read.
+  const availabilityFilter: Prisma.InventoryItemWhereInput =
+    availability === 'IN_STOCK'
+      ? { physicalQty: { gt: prisma.inventoryItem.fields.reservedQty } }
+      : availability === 'OUT_OF_STOCK'
+        ? { physicalQty: { lte: prisma.inventoryItem.fields.reservedQty } }
+        : {};
 
   const where: Prisma.InventoryItemWhereInput = {
     ...(locationId && { locationId }),
     ...(itemId && { itemId }),
+    ...(categoryId && { item: { categoryId } }),
+    ...(search && {
+      item: {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' as const } },
+          { sku: { contains: search, mode: 'insensitive' as const } },
+        ],
+        ...(categoryId ? { categoryId } : {}),
+      },
+    }),
+    ...availabilityFilter,
   };
 
   const [total, data] = await Promise.all([

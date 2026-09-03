@@ -1,13 +1,48 @@
+/**
+ * Database seeder.
+ *
+ * Content lives in seed-data.json (editable by hand); volume, inventory
+ * placement and the whole stock ledger are computed in seed/generate.ts. This
+ * file only resolves catalog keys into real ids and writes rows.
+ *
+ *   npm run seed         no-op if the database already has data
+ *   npm run seed:reset   wipes first (refuses when NODE_ENV=production)
+ */
 import 'dotenv/config';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Role } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+import {
+  generatePlan,
+  assertPlanIsConsistent,
+  SEED,
+  type Catalog,
+} from './seed/generate';
 
 const prisma = new PrismaClient();
 const DEFAULT_PASSWORD = 'Password@123';
 
-async function main() {
-  console.log('Resetting database...');
-  // Delete in reverse dependency order
+const catalog: Catalog = JSON.parse(
+  readFileSync(join(__dirname, 'seed-data.json'), 'utf-8'),
+) as Catalog;
+
+const shouldReset = process.argv.includes('--reset');
+
+const day = (offset: number) => {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  d.setHours(10, 0, 0, 0);
+  return d;
+};
+
+async function reset() {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Refusing to reset the database: NODE_ENV is "production".');
+  }
+  console.log('Resetting tables...');
+  // FK-safe order.
   await prisma.stockReservation.deleteMany();
   await prisma.customerOrderLine.deleteMany();
   await prisma.customerOrder.deleteMany();
@@ -22,288 +57,251 @@ async function main() {
   await prisma.user.deleteMany();
   await prisma.location.deleteMany();
   await prisma.counter.deleteMany();
+}
+
+/** A bare `npm run seed` must not write into a populated database. */
+async function alreadySeeded(): Promise<boolean> {
+  const [items, inventory] = await Promise.all([
+    prisma.item.count(),
+    prisma.inventoryItem.count(),
+  ]);
+  return items > 0 || inventory > 0;
+}
+
+async function main() {
+  const startedAt = Date.now();
+
+  if (shouldReset) {
+    await reset();
+  } else if (await alreadySeeded()) {
+    console.log(
+      [
+        'Database already has items/inventory — skipping (this is not an error).',
+        'Run `npm run seed:reset` to wipe and reseed.',
+      ].join('\n'),
+    );
+    return;
+  }
+
+  const plan = generatePlan(catalog);
+  assertPlanIsConsistent(plan);
+
+  // --- Locations, users, categories, items, batches ------------------------
+  const locationIdByCode = new Map<string, string>();
+  for (const l of catalog.locations) {
+    const row = await prisma.location.create({ data: { code: l.code, name: l.name } });
+    locationIdByCode.set(l.code, row.id);
+  }
 
   const passwordHash = await bcrypt.hash(DEFAULT_PASSWORD, 10);
-
-  console.log('Seeding Locations...');
-  const locMum = await prisma.location.create({
-    data: { code: 'WH-MUM', name: 'Mumbai Warehouse' },
-  });
-  const locPun = await prisma.location.create({ data: { code: 'WH-PUN', name: 'Pune Warehouse' } });
-  const locDel = await prisma.location.create({
-    data: { code: 'WH-DEL', name: 'Delhi Warehouse' },
-  });
-  const locations = [locMum, locPun, locDel];
-
-  console.log('Seeding Users...');
-  await prisma.user.create({
-    data: {
-      name: 'Aarti Deshpande',
-      email: 'aarti.admin@godown.test',
-      passwordHash,
-      role: 'ADMIN',
-      locationId: locMum.id,
-    },
-  });
-  const sales = await prisma.user.create({
-    data: {
-      name: 'Nikhil Verma',
-      email: 'nikhil.sales@godown.test',
-      passwordHash,
-      role: 'SALES',
-      locationId: locMum.id,
-    },
-  });
-  const ops = await prisma.user.create({
-    data: {
-      name: 'Suresh Pawar',
-      email: 'suresh.warehouse@godown.test',
-      passwordHash,
-      role: 'OPERATIONS',
-      locationId: locMum.id,
-    },
-  });
-
-  console.log('Seeding Categories...');
-  const catHw = await prisma.category.create({ data: { name: 'Hardware' } });
-  const catTl = await prisma.category.create({ data: { name: 'Tools' } });
-  const catPl = await prisma.category.create({ data: { name: 'Plumbing' } });
-  const catSf = await prisma.category.create({ data: { name: 'Safety' } });
-
-  console.log('Seeding Items & Inventory...');
-  const itemsData = [
-    { sku: 'HW-1001', name: 'Steel Bolt 10mm x 50mm', categoryId: catHw.id },
-    { sku: 'HW-1002', name: 'Steel Nut 10mm', categoryId: catHw.id },
-    { sku: 'HW-1003', name: 'Flat Washer 10mm', categoryId: catHw.id },
-    { sku: 'HW-1004', name: 'Spring Washer 10mm', categoryId: catHw.id },
-    { sku: 'HW-1005', name: 'Hex Bolt 12mm x 75mm', categoryId: catHw.id },
-    { sku: 'TL-2001', name: 'Claw Hammer 500g', categoryId: catTl.id },
-    { sku: 'TL-2002', name: 'Ball Peen Hammer 300g', categoryId: catTl.id },
-    { sku: 'TL-2003', name: 'Adjustable Wrench 10 inch', categoryId: catTl.id },
-    { sku: 'TL-2004', name: 'Combination Spanner Set (8pc)', categoryId: catTl.id },
-    { sku: 'TL-2005', name: 'Screwdriver Set (6pc)', categoryId: catTl.id },
-    { sku: 'PL-3001', name: 'PVC Pipe 1 inch (3m)', categoryId: catPl.id },
-    { sku: 'PL-3002', name: 'PVC Pipe 2 inch (3m)', categoryId: catPl.id },
-    { sku: 'PL-3003', name: 'PVC Elbow 1 inch', categoryId: catPl.id },
-    { sku: 'PL-3004', name: 'PVC Tee 1 inch', categoryId: catPl.id },
-    { sku: 'PL-3005', name: 'PVC Coupler 1 inch', categoryId: catPl.id },
-    { sku: 'SF-4001', name: 'Safety Goggles Clear', categoryId: catSf.id },
-    { sku: 'SF-4002', name: 'Work Gloves (Leather)', categoryId: catSf.id },
-    { sku: 'SF-4003', name: 'Nitrile Gloves (Pack of 50)', categoryId: catSf.id },
-    { sku: 'SF-4004', name: 'Safety Helmet (Yellow)', categoryId: catSf.id },
-    { sku: 'SF-4005', name: 'Reflective Safety Vest', categoryId: catSf.id },
-  ];
-
-  const allItems = [];
-  for (const data of itemsData) {
-    const item = await prisma.item.create({ data });
-    allItems.push(item);
-    // Create a batch
-    const batch = await prisma.batch.create({
-      data: { itemId: item.id, code: `B-2026-${Math.floor(Math.random() * 1000)}` },
-    });
-    // Create inventory in each location with some random stock
-    for (const loc of locations) {
-      const physicalQty = Math.floor(Math.random() * 500) + 10;
-      const invItem = await prisma.inventoryItem.create({
-        data: {
-          itemId: item.id,
-          locationId: loc.id,
-          batchId: batch.id,
-          physicalQty,
-        },
-      });
-      // Add opening stock movement
-      await prisma.stockMovement.create({
-        data: {
-          inventoryItemId: invItem.id,
-          type: 'IN',
-          quantity: physicalQty,
-          balanceAfter: physicalQty,
-          reason: 'OPENING_STOCK',
-          createdById: ops.id,
-        },
-      });
-    }
-  }
-
-  console.log('Seeding Customers...');
-  const customers = [];
-  for (let i = 1; i <= 10; i++) {
-    const cust = await prisma.customer.create({
+  const userIdByKey = new Map<string, string>();
+  for (const u of catalog.users) {
+    const row = await prisma.user.create({
       data: {
-        name: `Customer ${i}`,
-        businessName: `Business ${i} Ltd`,
-        mobile: `987654321${i % 10}`,
-        email: `customer${i}@example.com`,
+        name: u.name,
+        email: u.email,
+        passwordHash,
+        role: u.role as Role,
+        locationId: u.locationCode ? locationIdByCode.get(u.locationCode)! : null,
       },
     });
-    customers.push(cust);
+    userIdByKey.set(u.key, row.id);
+  }
+  const userId = (key: string) => userIdByKey.get(key) ?? userIdByKey.get('admin')!;
+
+  const categoryIdByName = new Map<string, string>();
+  for (const name of catalog.categories) {
+    const row = await prisma.category.create({ data: { name } });
+    categoryIdByName.set(name, row.id);
   }
 
-  console.log('Seeding Orders & WorkOrders...');
-  // 1 Reserved Order
-  const order = await prisma.customerOrder.create({
-    data: {
-      code: 'ORD-2026-00001',
-      customerId: customers[0].id,
-      locationId: locMum.id,
-      status: 'RESERVED',
-      createdById: sales.id,
-      lines: {
-        create: [
-          {
-            itemId: allItems[0].id,
-            quantity: 10,
-          },
-        ],
-      },
-    },
-    include: { lines: true },
-  });
-
-  const line = order.lines[0];
-  const invToReserve = await prisma.inventoryItem.findFirst({
-    where: { itemId: line.itemId, locationId: locMum.id },
-  });
-  if (invToReserve) {
-    await prisma.inventoryItem.update({
-      where: { id: invToReserve.id },
-      data: { reservedQty: 10 },
-    });
-    await prisma.stockReservation.create({
+  const itemIdBySku = new Map<string, string>();
+  for (const item of catalog.items) {
+    const row = await prisma.item.create({
       data: {
-        orderLineId: line.id,
-        inventoryItemId: invToReserve.id,
-        quantity: 10,
+        sku: item.sku,
+        name: item.name,
+        uom: item.uom,
+        categoryId: categoryIdByName.get(item.category)!,
       },
     });
+    itemIdBySku.set(item.sku, row.id);
   }
 
-  // 2 Work Orders
-  await prisma.workOrder.create({
-    data: {
-      code: 'WO-2026-00001',
-      locationId: locMum.id,
-      itemId: allItems[1].id,
-      requiredQty: 50,
-      assignedToId: ops.id,
-      status: 'ASSIGNED',
-    },
-  });
-
-  await prisma.workOrder.create({
-    data: {
-      code: 'WO-2026-00002',
-      locationId: locPun.id,
-      itemId: allItems[2].id,
-      requiredQty: 10000, // Shortage
-      assignedToId: ops.id,
-      status: 'ASSIGNED',
-    },
-  });
-
-  console.log('Seeding Transfers...');
-  // Requested
-  const batch1 = await prisma.batch.findFirst({ where: { itemId: allItems[3].id } });
-  if (batch1) {
-    await prisma.stockTransfer.create({
+  const batchIdByKey = new Map<string, string>();
+  for (const b of plan.batches) {
+    const row = await prisma.batch.create({
       data: {
-        code: 'TRF-2026-00001',
-        itemId: allItems[3].id,
-        batchId: batch1.id,
-        sourceLocationId: locMum.id,
-        destinationLocationId: locPun.id,
-        quantity: 20,
-        requestedById: ops.id,
-        status: 'REQUESTED',
+        itemId: itemIdBySku.get(b.sku)!,
+        code: b.code,
+        expiryDate: b.expiryOffsetDays === null ? null : day(b.expiryOffsetDays),
       },
     });
+    batchIdByKey.set(b.key, row.id);
   }
 
-  // Dispatched
-  const batch2 = await prisma.batch.findFirst({ where: { itemId: allItems[4].id } });
-  if (batch2) {
-    const invSrc = await prisma.inventoryItem.findFirst({
-      where: { itemId: allItems[4].id, locationId: locMum.id, batchId: batch2.id },
+  // --- Inventory -----------------------------------------------------------
+  const inventoryIdByKey = new Map<string, string>();
+  for (const row of plan.inventory) {
+    const created = await prisma.inventoryItem.create({
+      data: {
+        itemId: itemIdBySku.get(row.sku)!,
+        locationId: locationIdByCode.get(row.locationCode)!,
+        batchId: batchIdByKey.get(`${row.sku}:${row.batchCode}`)!,
+        physicalQty: row.physicalQty,
+        reservedQty: row.reservedQty,
+      },
     });
-    if (invSrc) {
-      await prisma.stockTransfer.create({
-        data: {
-          code: 'TRF-2026-00002',
-          itemId: allItems[4].id,
-          batchId: batch2.id,
-          sourceLocationId: locMum.id,
-          destinationLocationId: locPun.id,
-          quantity: 30,
-          dispatchedQty: 30,
-          requestedById: ops.id,
-          status: 'DISPATCHED',
-          dispatchedAt: new Date(),
-        },
-      });
-      await prisma.inventoryItem.update({
-        where: { id: invSrc.id },
-        data: { physicalQty: { decrement: 30 } },
-      });
-      await prisma.stockMovement.create({
-        data: {
-          inventoryItemId: invSrc.id,
-          type: 'OUT',
-          quantity: 30,
-          balanceAfter: invSrc.physicalQty - 30,
-          reason: 'TRANSFER_OUT',
-          createdById: ops.id,
-        },
-      });
-    }
+    inventoryIdByKey.set(row.key, created.id);
   }
 
-  // Received
-  const batch3 = await prisma.batch.findFirst({ where: { itemId: allItems[5].id } });
-  if (batch3) {
-    const invDest = await prisma.inventoryItem.findFirst({
-      where: { itemId: allItems[5].id, locationId: locPun.id, batchId: batch3.id },
+  // --- Transfers (before movements, so movements can reference them) -------
+  const transferIdByCode = new Map<string, string>();
+  for (const t of plan.transfers) {
+    const created = await prisma.stockTransfer.create({
+      data: {
+        code: t.code,
+        itemId: itemIdBySku.get(t.sku)!,
+        batchId: batchIdByKey.get(`${t.sku}:${t.batchCode}`)!,
+        sourceLocationId: locationIdByCode.get(t.sourceLocationCode)!,
+        destinationLocationId: locationIdByCode.get(t.destinationLocationCode)!,
+        quantity: t.quantity,
+        dispatchedQty: t.dispatchedQty,
+        receivedQty: t.receivedQty,
+        status: t.status,
+        requestedById: userId(t.requestedByKey),
+        createdAt: day(t.createdAtOffsetDays),
+        dispatchedAt: t.dispatchedOffsetDays === null ? null : day(t.dispatchedOffsetDays),
+        receivedAt: t.receivedOffsetDays === null ? null : day(t.receivedOffsetDays),
+      },
     });
-    if (invDest) {
-      await prisma.stockTransfer.create({
-        data: {
-          code: 'TRF-2026-00003',
-          itemId: allItems[5].id,
-          batchId: batch3.id,
-          sourceLocationId: locMum.id,
-          destinationLocationId: locPun.id,
-          quantity: 40,
-          dispatchedQty: 40,
-          receivedQty: 40,
-          requestedById: ops.id,
-          status: 'RECEIVED',
-          dispatchedAt: new Date(),
-          receivedAt: new Date(),
-        },
-      });
-      // Assuming it was already decremented from source and now we increment destination
-      await prisma.inventoryItem.update({
-        where: { id: invDest.id },
-        data: { physicalQty: { increment: 40 } },
-      });
-      await prisma.stockMovement.create({
-        data: {
-          inventoryItemId: invDest.id,
-          type: 'IN',
-          quantity: 40,
-          balanceAfter: invDest.physicalQty + 40,
-          reason: 'TRANSFER_IN',
-          createdById: ops.id,
-        },
-      });
-    }
+    transferIdByCode.set(t.code, created.id);
   }
 
-  // Set Counter
-  await prisma.counter.create({ data: { key: 'challan_seq', value: 10 } });
+  // --- Stock ledger --------------------------------------------------------
+  await prisma.stockMovement.createMany({
+    data: plan.movements.map((m) => ({
+      inventoryItemId: inventoryIdByKey.get(m.inventoryKey)!,
+      type: m.type,
+      quantity: m.quantity,
+      reason: m.reason,
+      balanceAfter: m.balanceAfter,
+      referenceType: m.referenceType,
+      referenceId: m.referenceCode ? (transferIdByCode.get(m.referenceCode) ?? null) : null,
+      createdById: userId(m.userKey),
+      createdAt: day(m.createdAtOffsetDays),
+    })),
+  });
 
-  console.log('Seed completed successfully!');
+  // --- Work orders ---------------------------------------------------------
+  await prisma.workOrder.createMany({
+    data: plan.workOrders.map((w) => ({
+      code: w.code,
+      locationId: locationIdByCode.get(w.locationCode)!,
+      itemId: itemIdBySku.get(w.sku)!,
+      requiredQty: w.requiredQty,
+      assignedToId: userId(w.assigneeKey),
+      status: w.status,
+      createdAt: day(w.createdAtOffsetDays),
+    })),
+  });
+
+  // --- Customers, orders, reservations -------------------------------------
+  const customerIds: string[] = [];
+  for (const c of catalog.customers) {
+    const row = await prisma.customer.create({
+      data: {
+        name: c.name,
+        businessName: c.businessName,
+        mobile: c.mobile,
+        email: c.email,
+      },
+    });
+    customerIds.push(row.id);
+  }
+
+  const lineIdByKey = new Map<string, string>();
+  for (const o of plan.orders) {
+    const created = await prisma.customerOrder.create({
+      data: {
+        code: o.code,
+        customerId: customerIds[o.customerIndex],
+        locationId: locationIdByCode.get(o.locationCode)!,
+        status: o.status,
+        createdById: userId(o.createdByKey),
+        createdAt: day(o.createdAtOffsetDays),
+        reservedAt: o.reservedOffsetDays === null ? null : day(o.reservedOffsetDays),
+        cancelledAt: o.cancelledOffsetDays === null ? null : day(o.cancelledOffsetDays),
+        lines: {
+          create: o.lines.map((l) => ({
+            itemId: itemIdBySku.get(l.sku)!,
+            quantity: l.quantity,
+          })),
+        },
+      },
+      include: { lines: true },
+    });
+
+    // Plan lines and created lines are in the same order.
+    o.lines.forEach((l, i) => lineIdByKey.set(l.lineKey, created.lines[i].id));
+  }
+
+  await prisma.stockReservation.createMany({
+    data: plan.reservations.map((r) => ({
+      orderLineId: lineIdByKey.get(r.lineKey)!,
+      inventoryItemId: inventoryIdByKey.get(r.inventoryKey)!,
+      quantity: r.quantity,
+    })),
+  });
+
+  await summarise(startedAt);
+}
+
+/** Prints what the screens will show, so a bad seed is obvious immediately. */
+async function summarise(startedAt: number) {
+  const [locations, items, inventory, movements, workOrders, transfers, orders, reservations] =
+    await Promise.all([
+      prisma.location.count(),
+      prisma.item.count(),
+      prisma.inventoryItem.count(),
+      prisma.stockMovement.count(),
+      prisma.workOrder.count(),
+      prisma.stockTransfer.count(),
+      prisma.customerOrder.count(),
+      prisma.stockReservation.count(),
+    ]);
+
+  const totals = await prisma.inventoryItem.aggregate({
+    _sum: { physicalQty: true, reservedQty: true },
+  });
+  const inTransit = await prisma.stockTransfer.aggregate({
+    where: { status: 'DISPATCHED' },
+    _sum: { dispatchedQty: true },
+  });
+  const byStatus = await prisma.stockTransfer.groupBy({
+    by: ['status'],
+    _count: true,
+  });
+
+  console.log(`
+Seed complete in ${((Date.now() - startedAt) / 1000).toFixed(1)}s  (SEED=${SEED})
+
+  Locations        ${locations}
+  Items            ${items}
+  Inventory rows   ${inventory}
+  Stock movements  ${movements}
+  Work orders      ${workOrders}
+  Transfers        ${transfers}  (${byStatus.map((s) => `${s.status.toLowerCase()} ${s._count}`).join(', ')})
+  Customer orders  ${orders}
+  Reservations     ${reservations}
+
+  Physical on hand ${totals._sum.physicalQty ?? 0}
+  Reserved         ${totals._sum.reservedQty ?? 0}
+  In transit       ${inTransit._sum.dispatchedQty ?? 0}
+
+  Sign in with: ${catalog.users.map((u) => u.email).join(', ')}
+  Password: ${DEFAULT_PASSWORD}
+`);
 }
 
 main()
