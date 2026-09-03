@@ -6,18 +6,19 @@ import { CreateOrderDialog } from "@/features/orders/components/CreateOrderDialo
 
 export default function OrdersPage() {
   const user = useAuthStore((state) => state.user);
+  const canCreate = user?.role === "ADMIN" || user?.role === "SALES";
 
   return (
-    <div className="flex-1 space-y-4 p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Customer Orders</h2>
-        {(user?.role === "ADMIN" || user?.role === "SALES") && (
-          <div className="flex items-center space-x-2">
-            <CreateOrderDialog />
-          </div>
-        )}
+    <div className="pb-8 tracking-[0.01em] space-y-8">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-ink">Customer orders</h1>
+          <p className="text-muted-foreground text-[13px] leading-tight">
+            Reserving an order holds stock against it without moving it.
+          </p>
+        </div>
+        {canCreate && <CreateOrderDialog />}
       </div>
-
       <OrdersTable />
     </div>
   );

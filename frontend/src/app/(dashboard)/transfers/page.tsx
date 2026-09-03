@@ -5,18 +5,20 @@ import { CreateTransferDialog } from "@/features/transfers/components/CreateTran
 import { useAuthStore } from "@/store/useAuthStore";
 
 export default function TransfersPage() {
-  const { user } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
   const canCreate = user?.role === "ADMIN" || user?.role === "OPERATIONS";
 
   return (
-    <div className="flex-1 space-y-4 p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">
-          Internal Transfers
-        </h2>
-        <div className="flex items-center space-x-2">
-          {canCreate && <CreateTransferDialog />}
+    <div className="pb-8 tracking-[0.01em] space-y-8">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-ink">Internal transfers</h1>
+          <p className="text-muted-foreground text-[13px] leading-tight">
+            Stock moving between godowns. Dispatched quantity is in transit
+            until it is received.
+          </p>
         </div>
+        {canCreate && <CreateTransferDialog />}
       </div>
       <TransfersTable />
     </div>

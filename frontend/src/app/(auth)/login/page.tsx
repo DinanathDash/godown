@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -45,7 +45,17 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const login = useAuthStore((state) => state.login);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const hasHydrated = useAuthStore((state) => state.hasHydrated);
   const router = useRouter();
+
+  // Already signed in? Don't sit on the login form. Waits for hydration for the
+  // same reason ProtectedRoute does — before it, everyone looks signed out.
+  useEffect(() => {
+    if (hasHydrated && isAuthenticated) {
+      router.replace("/inventory");
+    }
+  }, [hasHydrated, isAuthenticated, router]);
 
   const {
     register,
@@ -64,7 +74,9 @@ export default function LoginPage() {
       const response = await apiClient.post<AuthResponse>("/auth/login", data);
       login(response.data.user, response.data.accessToken);
 
-      router.push("/");
+      // Straight to the destination — going via "/" added a redirect hop.
+      // replace, so Back doesn't land on the login form again.
+      router.replace("/inventory");
     } catch (err: unknown) {
       const error = err as {
         response?: { data?: { error?: { message?: string } } };

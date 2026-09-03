@@ -1,3 +1,5 @@
+"use client";
+
 import {
   useTransfers,
   useDispatchTransfer,
@@ -15,141 +17,235 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useAuthStore } from "@/store/useAuthStore";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowRight, Check, X, Send } from "lucide-react";
+import { toast } from "@/components/ui/toast";
+import { useAuthStore } from "@/store/useAuthStore";
+import { ArrowRight, Check, X, Send, Truck } from "lucide-react";
+
+const HEAD = "text-[12px] font-medium text-muted-foreground tracking-wider";
+const CARD =
+  "bg-card shadow-sm border-[0.5px] border-border/50 rounded-2xl overflow-hidden";
+
+function StatusBadge({ status }: { status: Transfer["status"] }) {
+  switch (status) {
+    case "RECEIVED":
+      return (
+        <Badge className="bg-emerald-600 hover:bg-emerald-700 rounded-[6px]">
+          Received
+        </Badge>
+      );
+    case "DISPATCHED":
+      return (
+        <Badge variant="secondary" className="rounded-[6px]">
+          In transit
+        </Badge>
+      );
+    case "CANCELLED":
+      return (
+        <Badge variant="destructive" className="rounded-[6px]">
+          Cancelled
+        </Badge>
+      );
+    default:
+      return (
+        <Badge variant="outline" className="rounded-[6px]">
+          Requested
+        </Badge>
+      );
+  }
+}
 
 export function TransfersTable() {
-  const page = 1;
-  const { data, isLoading } = useTransfers({ page, limit: 20 });
+  const { data, isLoading } = useTransfers({ page: 1, limit: 20 });
   const dispatchMutation = useDispatchTransfer();
   const receiveMutation = useReceiveTransfer();
   const cancelMutation = useCancelTransfer();
-  const { user } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
 
   const canManage = user?.role === "ADMIN" || user?.role === "OPERATIONS";
 
   const handleAction = async (
     action: "DISPATCH" | "RECEIVE" | "CANCEL",
-    id: string,
+    transfer: Transfer,
   ) => {
+    const done: Record<typeof action, { title: string; description: string }> = {
+      DISPATCH: {
+        title: "Transfer dispatched",
+        description: `Stock has left ${transfer.source.code} and is in transit.`,
+      },
+      RECEIVE: {
+        title: "Transfer received",
+        description: `Stock is now on hand at ${transfer.destination.code}.`,
+      },
+      CANCEL: {
+        title: "Transfer cancelled",
+        description: `${transfer.code} will not be dispatched.`,
+      },
+    };
+
     try {
-      if (action === "DISPATCH") await dispatchMutation.mutateAsync(id);
-      if (action === "RECEIVE") await receiveMutation.mutateAsync(id);
-      if (action === "CANCEL") await cancelMutation.mutateAsync(id);
-      window.alert(`Transfer ${action.toLowerCase()}ed successfully`);
+      if (action === "DISPATCH") await dispatchMutation.mutateAsync(transfer.id);
+      if (action === "RECEIVE") await receiveMutation.mutateAsync(transfer.id);
+      if (action === "CANCEL") await cancelMutation.mutateAsync(transfer.id);
+      toast.add(done[action]);
     } catch (err: unknown) {
       const error = err as {
         response?: { data?: { error?: { message?: string } } };
       };
-      window.alert(
-        error.response?.data?.error?.message ||
-          `Failed to ${action.toLowerCase()} transfer`,
-      );
+      toast.add({
+        title: `Could not ${action.toLowerCase()} transfer`,
+        // The server's message is the useful one here — it explains *why*
+        // (already received, not enough unreserved stock at source, …).
+        description:
+          error.response?.data?.error?.message ?? "Please try again.",
+        type: "error",
+      });
     }
   };
 
   if (isLoading) {
     return (
-      <div className="space-y-2">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-20 w-full" />
+      <div className={CARD}>
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-canvas/50 border-b-[0.5px] border-border/50">
+              <TableHead className={`${HEAD} pl-5`}>Code</TableHead>
+              <TableHead className={HEAD}>Item</TableHead>
+              <TableHead className={HEAD}>Batch</TableHead>
+              <TableHead className={HEAD}>Route</TableHead>
+              <TableHead className={`${HEAD} text-right`}>Quantity</TableHead>
+              <TableHead className={HEAD}>Status</TableHead>
+              <TableHead className={`${HEAD} text-right pr-5`}>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <TableRow key={i} className="border-b-[0.5px] border-border/50">
+                <TableCell className="pl-5"><Skeleton className="h-4 w-28" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-10 ml-auto" /></TableCell>
+                <TableCell><Skeleton className="h-5 w-20 rounded-[6px]" /></TableCell>
+                <TableCell className="pr-5"><Skeleton className="h-8 w-24 ml-auto rounded-[10px]" /></TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     );
   }
 
-  const statusColors: Record<string, string> = {
-    REQUESTED: "bg-yellow-500/10 text-yellow-500",
-    DISPATCHED: "bg-blue-500/10 text-blue-500",
-    RECEIVED: "bg-green-500/10 text-green-500",
-    CANCELLED: "bg-red-500/10 text-red-500",
-  };
+  if (!data?.data.length) {
+    return (
+      <div className={`${CARD} py-20 text-center`}>
+        <Truck
+          className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3"
+          strokeWidth={1}
+        />
+        <p className="font-medium text-[13px] text-ink">No transfers yet</p>
+        <p className="text-[13px] leading-tight text-muted-foreground mt-1">
+          Raise one to move stock between godowns.
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="rounded-md border">
+    <div className={CARD}>
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Code</TableHead>
-            <TableHead>Item</TableHead>
-            <TableHead>Batch</TableHead>
-            <TableHead>Route</TableHead>
-            <TableHead>Quantity</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+          <TableRow className="bg-canvas/50 hover:bg-canvas/50 border-b-[0.5px] border-border/50">
+            <TableHead className={`${HEAD} pl-5`}>Code</TableHead>
+            <TableHead className={HEAD}>Item</TableHead>
+            <TableHead className={HEAD}>Batch</TableHead>
+            <TableHead className={HEAD}>Route</TableHead>
+            <TableHead className={`${HEAD} text-right`}>Quantity</TableHead>
+            <TableHead className={HEAD}>Status</TableHead>
+            <TableHead className={`${HEAD} text-right pr-5`}>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data?.data.map((transfer: Transfer) => (
-            <TableRow key={transfer.id}>
-              <TableCell className="font-medium">{transfer.code}</TableCell>
+          {data.data.map((transfer: Transfer) => (
+            <TableRow
+              key={transfer.id}
+              className="border-b-[0.5px] border-border/50"
+            >
+              <TableCell className="font-mono font-medium text-[13px] leading-tight pl-5">
+                {transfer.code}
+              </TableCell>
               <TableCell>
-                <div>{transfer.item.name}</div>
-                <div className="text-xs text-muted-foreground">
+                <div className="font-medium text-ink text-[13px] leading-tight">
+                  {transfer.item.name}
+                </div>
+                <div className="text-xs text-muted-foreground leading-tight mt-0.5">
                   {transfer.item.sku}
                 </div>
               </TableCell>
-              <TableCell>{transfer.batch.code}</TableCell>
+              <TableCell className="text-[13px] leading-tight text-muted-foreground">
+                {transfer.batch.code}
+              </TableCell>
               <TableCell>
-                <div className="flex items-center space-x-2 text-sm">
+                <div className="flex items-center gap-2 text-[13px] leading-tight">
                   <span>{transfer.source.code}</span>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  <ArrowRight
+                    className="h-3.5 w-3.5 text-muted-foreground"
+                    strokeWidth={1.5}
+                  />
                   <span>{transfer.destination.code}</span>
                 </div>
               </TableCell>
-              <TableCell>
-                {transfer.quantity}
-                {transfer.status === "RECEIVED" && (
-                  <span className="text-green-500 text-xs ml-1">
-                    (Received {transfer.receivedQty})
-                  </span>
-                )}
-                {transfer.status === "DISPATCHED" && (
-                  <span className="text-blue-500 text-xs ml-1">
-                    (Dispatched {transfer.dispatchedQty})
-                  </span>
-                )}
-              </TableCell>
-              <TableCell>
-                <Badge
-                  variant="outline"
-                  className={statusColors[transfer.status] || ""}
-                >
-                  {transfer.status}
-                </Badge>
-              </TableCell>
               <TableCell className="text-right">
+                <div className="text-[13px] leading-tight tabular-nums font-medium">
+                  {transfer.quantity}
+                </div>
+                {/* The brief's central rule made visible: dispatched stock has
+                    left the source but has not landed anywhere yet. */}
+                {transfer.status === "DISPATCHED" && (
+                  <div className="text-xs text-muted-foreground leading-tight mt-0.5 tabular-nums">
+                    {transfer.dispatchedQty} in transit
+                  </div>
+                )}
+                {transfer.status === "RECEIVED" && (
+                  <div className="text-xs text-muted-foreground leading-tight mt-0.5 tabular-nums">
+                    {transfer.receivedQty} received
+                  </div>
+                )}
+              </TableCell>
+              <TableCell>
+                <StatusBadge status={transfer.status} />
+              </TableCell>
+              <TableCell className="text-right pr-5">
                 {canManage && (
-                  <div className="flex justify-end space-x-2">
+                  <div className="flex justify-end gap-2">
                     {transfer.status === "REQUESTED" && (
                       <>
                         <Button
-                          size="sm"
                           variant="outline"
-                          onClick={() => handleAction("DISPATCH", transfer.id)}
+                          onClick={() => handleAction("DISPATCH", transfer)}
                           disabled={dispatchMutation.isPending}
+                          className="rounded-[10px] h-8 text-[12px] shadow-sm border-[0.5px] border-border/50"
                         >
-                          <Send className="h-4 w-4 mr-1" /> Dispatch
+                          <Send className="h-3.5 w-3.5 mr-1.5" /> Dispatch
                         </Button>
                         <Button
-                          size="sm"
                           variant="ghost"
-                          className="text-red-500"
-                          onClick={() => handleAction("CANCEL", transfer.id)}
+                          onClick={() => handleAction("CANCEL", transfer)}
                           disabled={cancelMutation.isPending}
+                          aria-label={`Cancel transfer ${transfer.code}`}
+                          className="rounded-[10px] h-8 text-destructive hover:text-destructive"
                         >
-                          <X className="h-4 w-4" />
+                          <X className="h-3.5 w-3.5" />
                         </Button>
                       </>
                     )}
                     {transfer.status === "DISPATCHED" && (
                       <Button
-                        size="sm"
-                        variant="default"
-                        onClick={() => handleAction("RECEIVE", transfer.id)}
+                        onClick={() => handleAction("RECEIVE", transfer)}
                         disabled={receiveMutation.isPending}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-[10px] h-8 text-[12px] shadow-sm"
                       >
-                        <Check className="h-4 w-4 mr-1" /> Receive
+                        <Check className="h-3.5 w-3.5 mr-1.5" /> Receive
                       </Button>
                     )}
                   </div>
@@ -157,13 +253,6 @@ export function TransfersTable() {
               </TableCell>
             </TableRow>
           ))}
-          {data?.data.length === 0 && (
-            <TableRow>
-              <TableCell colSpan={7} className="h-24 text-center">
-                No transfers found.
-              </TableCell>
-            </TableRow>
-          )}
         </TableBody>
       </Table>
     </div>

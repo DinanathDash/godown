@@ -1,21 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 
+/**
+ * Reads the stored session once on mount.
+ *
+ * It deliberately renders children immediately rather than blanking the tree
+ * while it waits. Returning null here hid every page — including /login, which
+ * needs no session at all — behind an empty frame on each load. Gating belongs
+ * in ProtectedRoute, which is the only part that actually depends on the answer.
+ */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [isMounted, setIsMounted] = useState(false);
-  const initialize = useAuthStore((state) => state.initialize);
+  const hydrate = useAuthStore((state) => state.hydrate);
 
   useEffect(() => {
-    initialize();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsMounted(true);
-  }, [initialize]);
-
-  if (!isMounted) {
-    return null; // Prevents hydration mismatch
-  }
+    hydrate();
+  }, [hydrate]);
 
   return <>{children}</>;
 }

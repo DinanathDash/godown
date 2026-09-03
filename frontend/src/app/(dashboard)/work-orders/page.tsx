@@ -8,16 +8,16 @@ export default function WorkOrdersPage() {
   const user = useAuthStore((state) => state.user);
 
   return (
-    <div className="flex-1 space-y-4 p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Work Orders</h2>
-        {user?.role === "ADMIN" && (
-          <div className="flex items-center space-x-2">
-            <CreateWorkOrderDialog />
-          </div>
-        )}
+    <div className="pb-8 tracking-[0.01em] space-y-8">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-ink">Work orders</h1>
+          <p className="text-muted-foreground text-[13px] leading-tight">
+            Material requirements and the shortage at each location.
+          </p>
+        </div>
+        {user?.role === "ADMIN" && <CreateWorkOrderDialog />}
       </div>
-
       <WorkOrdersTable />
     </div>
   );
