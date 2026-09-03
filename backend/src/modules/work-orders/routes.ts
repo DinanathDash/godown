@@ -24,6 +24,11 @@ router.get('/:id', validate(workOrderIdSchema), getWorkOrderByIdHandler);
 router.post('/', requireRole('ADMIN'), validate(createWorkOrderSchema), createWorkOrderHandler);
 
 // Admin and Operations can update status
-router.patch('/:id/status', requireRole('ADMIN', 'OPERATIONS'), validate(updateWorkOrderStatusSchema), updateWorkOrderStatusHandler);
+router.patch(
+  '/:id/status',
+  requireRole('ADMIN', 'OPERATIONS'),
+  validate(updateWorkOrderStatusSchema),
+  updateWorkOrderStatusHandler,
+);
 
 export default router;

@@ -30,7 +30,11 @@ export async function getWorkOrderByIdHandler(req: Request, res: Response, next:
   }
 }
 
-export async function updateWorkOrderStatusHandler(req: Request, res: Response, next: NextFunction) {
+export async function updateWorkOrderStatusHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const { status } = req.body;
     const result = await service.updateWorkOrderStatus(req.params.id as string, status);

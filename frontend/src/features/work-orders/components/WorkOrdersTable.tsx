@@ -1,4 +1,8 @@
-import { useWorkOrders, useUpdateWorkOrderStatus, WorkOrder } from '../api/work-orders';
+import {
+  useWorkOrders,
+  useUpdateWorkOrderStatus,
+  WorkOrder,
+} from "../api/work-orders";
 import {
   Table,
   TableBody,
@@ -6,11 +10,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { useAuthStore } from '@/store/useAuthStore';
-import { useRouter } from 'next/navigation';
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useRouter } from "next/navigation";
 
 export function WorkOrdersTable() {
   const { data, isLoading } = useWorkOrders();
@@ -19,22 +23,35 @@ export function WorkOrdersTable() {
   const router = useRouter();
 
   if (isLoading) return <div>Loading work orders...</div>;
-  if (!data?.data?.length) return <div className="text-muted-foreground p-4">No work orders found.</div>;
+  if (!data?.data?.length)
+    return (
+      <div className="text-muted-foreground p-4">No work orders found.</div>
+    );
 
-  const handleUpdateStatus = (wo: WorkOrder, newStatus: WorkOrder['status']) => {
+  const handleUpdateStatus = (
+    wo: WorkOrder,
+    newStatus: WorkOrder["status"],
+  ) => {
     if (!window.confirm(`Move work order ${wo.code} to ${newStatus}?`)) return;
-    updateStatus.mutate({ id: wo.id, status: newStatus }, {
-      onError: (err: unknown) => {
-        const e = err as { response?: { data?: { error?: { message?: string } } } };
-        window.alert(e.response?.data?.error?.message || 'Failed to update status');
+    updateStatus.mutate(
+      { id: wo.id, status: newStatus },
+      {
+        onError: (err: unknown) => {
+          const e = err as {
+            response?: { data?: { error?: { message?: string } } };
+          };
+          window.alert(
+            e.response?.data?.error?.message || "Failed to update status",
+          );
+        },
       },
-    });
+    );
   };
 
   const handleRequestTransfer = (wo: WorkOrder) => {
     // Navigate to transfers with prefilled data using query params
     const params = new URLSearchParams({
-      action: 'request',
+      action: "request",
       itemId: wo.itemId,
       destinationLocationId: wo.locationId,
       quantity: wo.shortageQty.toString(),
@@ -71,26 +88,48 @@ export function WorkOrdersTable() {
               </TableCell>
               <TableCell>{wo.assignedTo.name}</TableCell>
               <TableCell>
-                <Badge variant={wo.status === 'COMPLETED' ? 'default' : wo.status === 'IN_PROGRESS' ? 'secondary' : 'outline'}>
+                <Badge
+                  variant={
+                    wo.status === "COMPLETED"
+                      ? "default"
+                      : wo.status === "IN_PROGRESS"
+                        ? "secondary"
+                        : "outline"
+                  }
+                >
                   {wo.status}
                 </Badge>
               </TableCell>
               <TableCell className="text-right space-x-2">
                 {wo.shortageQty > 0 && (
-                  <Button variant="destructive" size="sm" onClick={() => handleRequestTransfer(wo)}>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleRequestTransfer(wo)}
+                  >
                     Request Transfer
                   </Button>
                 )}
-                {(user?.role === 'ADMIN' || user?.role === 'OPERATIONS') && wo.status === 'ASSIGNED' && (
-                  <Button variant="outline" size="sm" onClick={() => handleUpdateStatus(wo, 'IN_PROGRESS')}>
-                    Start
-                  </Button>
-                )}
-                {(user?.role === 'ADMIN' || user?.role === 'OPERATIONS') && wo.status === 'IN_PROGRESS' && (
-                  <Button variant="outline" size="sm" onClick={() => handleUpdateStatus(wo, 'COMPLETED')}>
-                    Complete
-                  </Button>
-                )}
+                {(user?.role === "ADMIN" || user?.role === "OPERATIONS") &&
+                  wo.status === "ASSIGNED" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleUpdateStatus(wo, "IN_PROGRESS")}
+                    >
+                      Start
+                    </Button>
+                  )}
+                {(user?.role === "ADMIN" || user?.role === "OPERATIONS") &&
+                  wo.status === "IN_PROGRESS" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleUpdateStatus(wo, "COMPLETED")}
+                    >
+                      Complete
+                    </Button>
+                  )}
               </TableCell>
             </TableRow>
           ))}

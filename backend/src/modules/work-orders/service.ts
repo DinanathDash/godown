@@ -33,16 +33,16 @@ export async function getWorkOrders(query: {
   const enrichedData = await Promise.all(
     data.map(async (wo) => {
       const [{ available }] = await prisma.$queryRaw<{ available: number }[]>`
-        SELECT COALESCE(SUM(physical_qty - reserved_qty), 0)::int AS available
+        SELECT COALESCE(SUM("physicalQty" - "reservedQty"), 0)::int AS available
         FROM inventory_items
-        WHERE item_id = ${wo.itemId}::uuid AND location_id = ${wo.locationId}::uuid
+        WHERE "itemId" = ${wo.itemId} AND "locationId" = ${wo.locationId}
       `;
       return {
         ...wo,
         availableQty: available,
         shortageQty: Math.max(0, wo.requiredQty - available),
       };
-    })
+    }),
   );
 
   return {
@@ -67,12 +67,7 @@ export async function createWorkOrder(data: {
     await tx.user.findUniqueOrThrow({ where: { id: data.assignedToId } });
 
     // Generate code
-    const counter = await tx.counter.upsert({
-      where: { key: 'wo_seq' },
-      update: { value: { increment: 1 } },
-      create: { key: 'wo_seq', value: 1 },
-    });
-    const code = `WO-${new Date().getFullYear()}-${counter.value.toString().padStart(5, '0')}`;
+    const code = `WO-${new Date().getFullYear()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
     return tx.workOrder.create({
       data: {
@@ -100,9 +95,9 @@ export async function getWorkOrderById(id: string) {
   if (!wo) throw new AppError(404, 'NOT_FOUND', 'Work order not found');
 
   const [{ available }] = await prisma.$queryRaw<{ available: number }[]>`
-    SELECT COALESCE(SUM(physical_qty - reserved_qty), 0)::int AS available
+    SELECT COALESCE(SUM("physicalQty" - "reservedQty"), 0)::int AS available
     FROM inventory_items
-    WHERE item_id = ${wo.itemId}::uuid AND location_id = ${wo.locationId}::uuid
+    WHERE "itemId" = ${wo.itemId} AND "locationId" = ${wo.locationId}
   `;
 
   return {
@@ -124,7 +119,11 @@ export async function updateWorkOrderStatus(id: string, newStatus: WorkOrderStat
     };
 
     if (!validTransitions[wo.status].includes(newStatus)) {
-      throw new AppError(409, 'INVALID_STATUS_TRANSITION', `Cannot transition from ${wo.status} to ${newStatus}`);
+      throw new AppError(
+        409,
+        'INVALID_STATUS_TRANSITION',
+        `Cannot transition from ${wo.status} to ${newStatus}`,
+      );
     }
 
     return tx.workOrder.update({

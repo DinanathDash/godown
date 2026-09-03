@@ -62,13 +62,7 @@ export async function createTransfer(
   }
 
   return prisma.$transaction(async (tx) => {
-    // Generate code
-    const counter = await tx.counter.upsert({
-      where: { key: 'transfer_seq' },
-      update: { value: { increment: 1 } },
-      create: { key: 'transfer_seq', value: 1 },
-    });
-    const code = `TRF-${new Date().getFullYear()}-${counter.value.toString().padStart(5, '0')}`;
+    const code = `TRF-${new Date().getFullYear()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
     return tx.stockTransfer.create({
       data: {
