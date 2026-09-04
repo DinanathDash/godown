@@ -84,7 +84,13 @@ export function InventoryTable() {
 
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [adjustType, setAdjustType] = useState<"IN" | "OUT">("IN");
-  const [quantity, setQuantity] = useState(1);
+  // Held as the raw string the user typed. Storing a number here and
+  // coercing on every keystroke is what stuck a leading zero to the field:
+  // React compares the DOM value against the new one loosely, so "01" == 1
+  // and it decides the input is already correct. Clearing the box hit the
+  // same edge from the other side — Number("") is 0, which React writes
+  // straight back as "0". Parse at the edges instead.
+  const [quantity, setQuantity] = useState("1");
   const [reason, setReason] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
@@ -119,12 +125,17 @@ export function InventoryTable() {
   // is missing instead of spending a round trip to be told 400.
   const activeRow = rows.find((r) => r.id === selectedItem);
   const trimmedReason = reason.trim();
+  // Number("") is 0 and Number(" ") is 0, so an empty box has to be rejected
+  // before the numeric checks rather than by them.
+  const quantityValue = quantity.trim() === "" ? NaN : Number(quantity);
   const validationError =
-    !Number.isFinite(quantity) || quantity < 1
-      ? "Enter a quantity of at least 1."
+    !Number.isInteger(quantityValue) || quantityValue < 1
+      ? "Enter a whole quantity of at least 1."
       : trimmedReason.length < 3
         ? "Give a reason of at least 3 characters."
-        : adjustType === "OUT" && activeRow && quantity > activeRow.availableQty
+        : adjustType === "OUT" &&
+            activeRow &&
+            quantityValue > activeRow.availableQty
           ? `Only ${activeRow.availableQty} available to remove.`
           : null;
 
@@ -134,12 +145,12 @@ export function InventoryTable() {
       await adjustStock.mutateAsync({
         inventoryItemId: selectedItem,
         type: adjustType,
-        quantity,
+        quantity: quantityValue,
         reason: trimmedReason,
       });
       toast.add({
         title: adjustType === "IN" ? "Stock added" : "Stock removed",
-        description: `${quantity} ${activeRow?.item.uom ?? "units"} on ${activeRow?.item.sku ?? "this item"}.`,
+        description: `${quantityValue} ${activeRow?.item.uom ?? "units"} on ${activeRow?.item.sku ?? "this item"}.`,
       });
       setIsOpen(false);
     } catch (err: unknown) {
@@ -181,9 +192,10 @@ export function InventoryTable() {
         >
           <SelectTrigger className={`w-[170px] ${CONTROL}`}>
             <SelectValue placeholder="Location">
-              {locationId === "ALL" 
-                ? "All godowns" 
-                : locations?.find(l => l.id === locationId)?.name || "Location"}
+              {locationId === "ALL"
+                ? "All godowns"
+                : locations?.find((l) => l.id === locationId)?.name ||
+                  "Location"}
             </SelectValue>
           </SelectTrigger>
           <SelectContent className="rounded-[10px]">
@@ -204,7 +216,8 @@ export function InventoryTable() {
             <SelectValue placeholder="Category">
               {categoryId === "ALL"
                 ? "All categories"
-                : categories?.find(c => c.id === categoryId)?.name || "Category"}
+                : categories?.find((c) => c.id === categoryId)?.name ||
+                  "Category"}
             </SelectValue>
           </SelectTrigger>
           <SelectContent className="rounded-[10px]">
@@ -347,7 +360,7 @@ export function InventoryTable() {
                           // along into this one.
                           if (val) {
                             setAdjustType("IN");
-                            setQuantity(1);
+                            setQuantity("1");
                             setReason("");
                           }
                         }}
@@ -378,16 +391,14 @@ export function InventoryTable() {
                                     setAdjustType(v as "IN" | "OUT")
                                   }
                                 >
-                                  <SelectTrigger className={`w-full ${CONTROL}`}>
+                                  <SelectTrigger
+                                    className={`w-full ${CONTROL}`}
+                                  >
                                     <SelectValue placeholder="Select type" />
                                   </SelectTrigger>
                                   <SelectContent className="rounded-[10px]">
-                                    <SelectItem value="IN">
-                                      IN
-                                    </SelectItem>
-                                    <SelectItem value="OUT">
-                                      OUT
-                                    </SelectItem>
+                                    <SelectItem value="IN">IN</SelectItem>
+                                    <SelectItem value="OUT">OUT</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </div>
@@ -401,11 +412,11 @@ export function InventoryTable() {
                                 <Input
                                   type="number"
                                   min="1"
+                                  step="1"
+                                  inputMode="numeric"
                                   className={`w-full ${CONTROL}`}
                                   value={quantity}
-                                  onChange={(e) =>
-                                    setQuantity(Number(e.target.value))
-                                  }
+                                  onChange={(e) => setQuantity(e.target.value)}
                                 />
                               </div>
                             </div>
