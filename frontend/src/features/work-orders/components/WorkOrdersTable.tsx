@@ -251,20 +251,18 @@ export function WorkOrdersTable() {
                     <div className="flex justify-end gap-2">
                       {short && (
                         <Button
-                          variant="outline"
                           onClick={() => handleRequestTransfer(wo)}
-                          className="rounded-[10px] h-8 text-[12px] shadow-sm border-[0.5px] border-border/50"
+                          className="bg-amber-500 hover:bg-amber-600 text-white rounded-[10px] h-8 text-[12px] shadow-sm"
                         >
                           Request transfer
                         </Button>
                       )}
                       {canOperate && wo.status === "ASSIGNED" && (
                         <Button
-                          variant="outline"
                           onClick={() =>
                             setPending({ wo, status: "IN_PROGRESS" })
                           }
-                          className="rounded-[10px] h-8 text-[12px] shadow-sm border-[0.5px] border-border/50"
+                          className="bg-blue-500 hover:bg-blue-600 text-white rounded-[10px] h-8 text-[12px] shadow-sm"
                         >
                           Start
                         </Button>

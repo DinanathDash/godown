@@ -181,9 +181,10 @@ export function InventoryTable() {
         >
           <SelectTrigger className={`w-[170px] ${CONTROL}`}>
             <SelectValue placeholder="Location">
-              {locationId === "ALL" 
-                ? "All godowns" 
-                : locations?.find(l => l.id === locationId)?.name || "Location"}
+              {locationId === "ALL"
+                ? "All godowns"
+                : locations?.find((l) => l.id === locationId)?.name ||
+                  "Location"}
             </SelectValue>
           </SelectTrigger>
           <SelectContent className="rounded-[10px]">
@@ -204,7 +205,8 @@ export function InventoryTable() {
             <SelectValue placeholder="Category">
               {categoryId === "ALL"
                 ? "All categories"
-                : categories?.find(c => c.id === categoryId)?.name || "Category"}
+                : categories?.find((c) => c.id === categoryId)?.name ||
+                  "Category"}
             </SelectValue>
           </SelectTrigger>
           <SelectContent className="rounded-[10px]">
@@ -224,7 +226,13 @@ export function InventoryTable() {
           )}
         >
           <SelectTrigger className={`w-[165px] ${CONTROL}`}>
-            <SelectValue placeholder="Availability" />
+            <SelectValue placeholder="Availability">
+              {availability === "ALL"
+                ? "Any availability"
+                : availability === "IN_STOCK"
+                  ? "Available"
+                  : "Nothing available"}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent className="rounded-[10px]">
             <SelectItem value="ALL">Any availability</SelectItem>
@@ -378,16 +386,14 @@ export function InventoryTable() {
                                     setAdjustType(v as "IN" | "OUT")
                                   }
                                 >
-                                  <SelectTrigger className={`w-full ${CONTROL}`}>
+                                  <SelectTrigger
+                                    className={`w-full ${CONTROL}`}
+                                  >
                                     <SelectValue placeholder="Select type" />
                                   </SelectTrigger>
                                   <SelectContent className="rounded-[10px]">
-                                    <SelectItem value="IN">
-                                      IN
-                                    </SelectItem>
-                                    <SelectItem value="OUT">
-                                      OUT
-                                    </SelectItem>
+                                    <SelectItem value="IN">IN</SelectItem>
+                                    <SelectItem value="OUT">OUT</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </div>

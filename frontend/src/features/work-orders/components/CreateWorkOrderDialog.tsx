@@ -23,7 +23,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
+import { toast } from "@/components/ui/toast";
 
 const schema = z.object({
   locationId: z.string().uuid(),
@@ -50,20 +52,34 @@ export function CreateWorkOrderDialog() {
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     mode: "onChange",
+    defaultValues: {
+      locationId: "",
+      itemId: "",
+      requiredQty: 1 as unknown as number,
+      assignedToId: "",
+    },
   });
 
   const onSubmit = async (data: FormValues) => {
     try {
       await createMutation.mutateAsync(data);
+      toast.add({
+        title: "Success",
+        description: "Work order created successfully.",
+        type: "success",
+      });
       reset();
       setOpen(false);
     } catch (err: unknown) {
       const e = err as {
         response?: { data?: { error?: { message?: string } } };
       };
-      window.alert(
-        e.response?.data?.error?.message || "Failed to create work order",
-      );
+      toast.add({
+        title: "Error",
+        description:
+          e.response?.data?.error?.message || "Failed to create work order",
+        type: "error",
+      });
     }
   };
 
@@ -97,16 +113,21 @@ export function CreateWorkOrderDialog() {
                   <SelectTrigger
                     className={`w-full ${errors.locationId ? "border-red-500" : ""}`}
                   >
-                    <SelectValue placeholder="Select Location" />
+                    <SelectValue placeholder="Select Location">
+                      {field.value
+                        ? locationsData?.find(
+                            (l: { id: string; name: string }) =>
+                              l.id === field.value,
+                          )?.name
+                        : undefined}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    {locationsData?.map(
-                      (loc: { id: string; name: string }) => (
-                        <SelectItem key={loc.id} value={loc.id}>
-                          {loc.name}
-                        </SelectItem>
-                      ),
-                    )}
+                    {locationsData?.map((loc: { id: string; name: string }) => (
+                      <SelectItem key={loc.id} value={loc.id}>
+                        {loc.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               )}
@@ -128,16 +149,21 @@ export function CreateWorkOrderDialog() {
                   <SelectTrigger
                     className={`w-full ${errors.itemId ? "border-red-500" : ""}`}
                   >
-                    <SelectValue placeholder="Select Item" />
+                    <SelectValue placeholder="Select Item">
+                      {field.value
+                        ? itemsData?.find(
+                            (i: { id: string; name: string }) =>
+                              i.id === field.value,
+                          )?.name
+                        : undefined}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    {itemsData?.map(
-                      (item: { id: string; name: string }) => (
-                        <SelectItem key={item.id} value={item.id}>
-                          {item.name}
-                        </SelectItem>
-                      ),
-                    )}
+                    {itemsData?.map((item: { id: string; name: string }) => (
+                      <SelectItem key={item.id} value={item.id}>
+                        {item.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               )}
@@ -149,10 +175,9 @@ export function CreateWorkOrderDialog() {
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Required Quantity</label>
-            <input
+            <Input
               type="number"
               {...register("requiredQty")}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               placeholder="e.g. 50"
             />
             {errors.requiredQty && (
@@ -172,7 +197,14 @@ export function CreateWorkOrderDialog() {
                   <SelectTrigger
                     className={`w-full ${errors.assignedToId ? "border-red-500" : ""}`}
                   >
-                    <SelectValue placeholder="Select Assignee" />
+                    <SelectValue placeholder="Select Assignee">
+                      {field.value
+                        ? displayUsers.find(
+                            (u: { id: string; name: string }) =>
+                              u.id === field.value,
+                          )?.name
+                        : undefined}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {displayUsers.map((user: { id: string; name: string }) => (
@@ -192,7 +224,10 @@ export function CreateWorkOrderDialog() {
           </div>
 
           <div className="flex justify-end pt-4">
-            <Button type="submit" disabled={createMutation.isPending || !isValid}>
+            <Button
+              type="submit"
+              disabled={createMutation.isPending || !isValid}
+            >
               {createMutation.isPending ? "Creating..." : "Create"}
             </Button>
           </div>

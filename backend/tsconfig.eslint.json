@@ -1,4 +1,12 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["src/**/*", "tests/**/*", "vitest.config.ts", "prisma/**/*.ts", "eslint.config.mjs", "clear-db.ts", "warmup.ts"]
+  "include": [
+    "src/**/*",
+    "tests/**/*",
+    "vitest.config.ts",
+    "prisma/**/*.ts",
+    "eslint.config.mjs",
+    "clear-db.ts",
+    "warmup.ts"
+  ]
 }
