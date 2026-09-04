@@ -23,7 +23,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { Plus, Trash2 } from "lucide-react";
+import { toast } from "@/components/ui/toast";
 
 const schema = z.object({
   customerId: z.string().uuid(),
@@ -57,6 +59,8 @@ export function CreateOrderDialog() {
     resolver: zodResolver(schema),
     mode: "onChange",
     defaultValues: {
+      customerId: "",
+      locationId: "",
       lines: [{ itemId: "", quantity: 1 as unknown as number }],
     },
   });
@@ -69,15 +73,23 @@ export function CreateOrderDialog() {
   const onSubmit = async (data: FormValues) => {
     try {
       await createMutation.mutateAsync(data);
+      toast.add({
+        title: "Success",
+        description: "Order created successfully.",
+        type: "success",
+      });
       reset();
       setOpen(false);
     } catch (err: unknown) {
       const e = err as {
         response?: { data?: { error?: { message?: string } } };
       };
-      window.alert(
-        e.response?.data?.error?.message || "Failed to create order",
-      );
+      toast.add({
+        title: "Error",
+        description:
+          e.response?.data?.error?.message || "Failed to create order",
+        type: "error",
+      });
     }
   };
 
@@ -107,7 +119,14 @@ export function CreateOrderDialog() {
                     <SelectTrigger
                       className={`w-full ${errors.customerId ? "border-red-500" : ""}`}
                     >
-                      <SelectValue placeholder="Select Customer" />
+                      <SelectValue placeholder="Select Customer">
+                        {field.value
+                          ? customersData?.find(
+                              (c: { id: string; name: string }) =>
+                                c.id === field.value,
+                            )?.name
+                          : undefined}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {customersData?.map(
@@ -140,7 +159,14 @@ export function CreateOrderDialog() {
                     <SelectTrigger
                       className={`w-full ${errors.locationId ? "border-red-500" : ""}`}
                     >
-                      <SelectValue placeholder="Select Location" />
+                      <SelectValue placeholder="Select Location">
+                        {field.value
+                          ? locationsData?.find(
+                              (l: { id: string; name: string }) =>
+                                l.id === field.value,
+                            )?.name
+                          : undefined}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {locationsData?.map(
@@ -191,11 +217,21 @@ export function CreateOrderDialog() {
                       control={control}
                       name={`lines.${index}.itemId` as const}
                       render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
                           <SelectTrigger
                             className={`w-full ${errors.lines?.[index]?.itemId ? "border-red-500" : ""}`}
                           >
-                            <SelectValue placeholder="Select Item" />
+                            <SelectValue placeholder="Select Item">
+                              {field.value
+                                ? itemsData?.find(
+                                    (i: { id: string; name: string }) =>
+                                      i.id === field.value,
+                                  )?.name
+                                : undefined}
+                            </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
                             {itemsData?.map(
@@ -216,10 +252,9 @@ export function CreateOrderDialog() {
                     )}
                   </div>
                   <div className="w-24">
-                    <input
+                    <Input
                       type="number"
                       {...register(`lines.${index}.quantity` as const)}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                       placeholder="Qty"
                     />
                     {errors.lines?.[index]?.quantity && (
@@ -242,7 +277,10 @@ export function CreateOrderDialog() {
           </div>
 
           <div className="flex justify-end pt-4">
-            <Button type="submit" disabled={createMutation.isPending || !isValid}>
+            <Button
+              type="submit"
+              disabled={createMutation.isPending || !isValid}
+            >
               {createMutation.isPending ? "Creating..." : "Create Order"}
             </Button>
           </div>

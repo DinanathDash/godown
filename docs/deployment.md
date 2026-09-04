@@ -20,8 +20,8 @@ Godown can be deployed on any standard Node.js hosting platform (Backend) and st
    npm install --include=dev
    npm run build
    npx prisma generate
-   npx prisma migrate deploy
-   npx prisma db seed
+   npx prisma db push
+   npm run seed
    npm start
    ```
 
@@ -33,12 +33,12 @@ Godown can be deployed on any standard Node.js hosting platform (Backend) and st
    - **Root Directory**: `frontend`
    - **Build Command**: `npm run build`
 4. Configure Environment Variables:
-   - `NEXT_PUBLIC_API_URL`: The URL of your backend (e.g., `https://api.godown.com/api`).
+   - `NEXT_PUBLIC_API_URL`: The URL of your backend (e.g., `https://api.godown.dinanath.dev/api`).
 5. Click **Deploy**.
 
 ## 4. CORS Configuration
 
 Once the frontend is deployed:
 
-1. Update the backend `CORS_ORIGIN` environment variable to include the frontend URL.
+1. Update the backend `CORS_ORIGINS` environment variable to include the frontend URL (`https://godown.dinanath.dev`).
 2. Restart the backend service.

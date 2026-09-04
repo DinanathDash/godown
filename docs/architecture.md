@@ -15,9 +15,9 @@ The backend follows a classic 3-tier Controller-Service-Repository architecture.
 
 ### Request Flow
 
-1. **Route Layer (`/routes`)**: Defines API endpoints and binds them to specific controllers. Applies authentication (`authenticate`) and authorization (`requireRole`) middleware.
-2. **Controller Layer (`/controllers`)**: Handles HTTP concerns. Extracts parameters, bodies, and queries, parses them through Zod schemas, invokes the Service layer, and formats the HTTP response envelope.
-3. **Service Layer (`/services`)**: Contains core business logic. Responsible for orchestrating multiple database calls, enforcing invariants (e.g., preventing overselling), and throwing `AppError` instances if business rules are violated.
+1. **Route Layer (`src/modules/{module-name}/routes.ts`)**: Defines API endpoints and binds them to specific controllers. Applies authentication (`authenticate`) and authorization (`requireRole`) middleware.
+2. **Controller Layer (`src/modules/{module-name}/controller.ts`)**: Handles HTTP concerns. Extracts parameters, bodies, and queries, parses them through Zod schemas (`schema.ts`), invokes the Service layer, and formats the HTTP response envelope.
+3. **Service Layer (`src/modules/{module-name}/service.ts`)**: Contains core business logic. Responsible for orchestrating multiple database calls, enforcing invariants (e.g., preventing overselling), and throwing `AppError` instances if business rules are violated.
 4. **Data Layer (`Prisma`)**: Interacts directly with the PostgreSQL database.
 
 ### Core Modules

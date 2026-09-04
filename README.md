@@ -13,7 +13,7 @@ It provides five key modules:
 ## Documentation
 
 - **Architecture**: See [`docs/architecture.md`](./docs/architecture.md) for details on the architecture, request flow, and business invariants.
-- **Deployment**: See [`docs/deployment.md`](./docs/deployment.md) for step-by-step instructions on deploying the application.
+- **Deployment**: See [`docs/deployment.md`](./docs/deployment.md) for step-by-step instructions on deploying the application to `godown.dinanath.dev`.
 - **API Reference**: Import the [`docs/postman_collection.json`](./docs/postman_collection.json) file into Postman or Insomnia to explore the API endpoints.
 
 ## Test Credentials
@@ -51,15 +51,15 @@ It provides five key modules:
 
 ## Environment Variables
 
-| Variable         | Purpose                        | Example                                          |
-| ---------------- | ------------------------------ | ------------------------------------------------ |
-| `NODE_ENV`       | Environment context            | `development`                                    |
-| `PORT`           | API listen port                | `4000`                                           |
-| `DATABASE_URL`   | Postgres connection string     | `postgresql://user:pass@host/db?sslmode=require` |
-| `JWT_SECRET`     | Secret for signing auth tokens | `super-secret-key-change-me`                     |
-| `JWT_EXPIRES_IN` | Token validity duration        | `12h`                                            |
-| `CORS_ORIGINS`   | Allowed frontend domains       | `http://localhost:3000`                          |
-| `LOG_LEVEL`      | Pino logger verbosity          | `info`                                           |
+| Variable         | Purpose                        | Example                                             |
+| ---------------- | ------------------------------ | --------------------------------------------------- |
+| `NODE_ENV`       | Environment context            | `development`                                       |
+| `PORT`           | API listen port                | `4000`                                              |
+| `DATABASE_URL`   | Postgres connection string     | `postgresql://user:pass@host/db?sslmode=require`    |
+| `JWT_SECRET`     | Secret for signing auth tokens | `super-secret-key-change-me`                        |
+| `JWT_EXPIRES_IN` | Token validity duration        | `12h`                                               |
+| `CORS_ORIGINS`   | Allowed frontend domains       | `http://localhost:3000,https://godown.dinanath.dev` |
+| `LOG_LEVEL`      | Pino logger verbosity          | `info`                                              |
 
 ## Testing
 

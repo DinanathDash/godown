@@ -237,7 +237,13 @@ export function InventoryTable() {
           )}
         >
           <SelectTrigger className={`w-[165px] ${CONTROL}`}>
-            <SelectValue placeholder="Availability" />
+            <SelectValue placeholder="Availability">
+              {availability === "ALL"
+                ? "Any availability"
+                : availability === "IN_STOCK"
+                  ? "Available"
+                  : "Nothing available"}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent className="rounded-[10px]">
             <SelectItem value="ALL">Any availability</SelectItem>

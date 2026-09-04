@@ -9,7 +9,6 @@ import {
   createTestCustomer,
 } from './testUtils';
 
-
 describe('5. RBAC API Tests', () => {
   let salesToken: string;
   let opsToken: string;
