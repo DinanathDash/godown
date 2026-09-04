@@ -16,7 +16,19 @@ import { join } from 'node:path';
 
 import { generatePlan, assertPlanIsConsistent, SEED, type Catalog } from './seed/generate';
 
-const prisma = new PrismaClient();
+const getPrismaUrl = () => {
+  const url = process.env.DATABASE_URL || '';
+  if (url.includes('-pooler.') && url.includes('neon.tech') && !url.includes('pgbouncer=true')) {
+    return url.includes('?') ? `${url}&pgbouncer=true` : `${url}?pgbouncer=true`;
+  }
+  return url;
+};
+
+const prisma = new PrismaClient({
+  datasources: {
+    db: { url: getPrismaUrl() },
+  },
+});
 const DEFAULT_PASSWORD = 'Password@123';
 
 const catalog: Catalog = JSON.parse(

@@ -41,7 +41,7 @@ function StatusBadge({ status }: { status: CustomerOrder["status"] }) {
   switch (status) {
     case "RESERVED":
       return (
-        <Badge className="bg-emerald-600 hover:bg-emerald-700 rounded-[6px]">
+        <Badge className="bg-amber-500 hover:bg-amber-600 rounded-[6px] text-white">
           Reserved
         </Badge>
       );
@@ -53,7 +53,7 @@ function StatusBadge({ status }: { status: CustomerOrder["status"] }) {
       );
     case "FULFILLED":
       return (
-        <Badge variant="secondary" className="rounded-[6px]">
+        <Badge className="bg-emerald-600 hover:bg-emerald-700 rounded-[6px] text-white">
           Fulfilled
         </Badge>
       );

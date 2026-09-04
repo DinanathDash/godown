@@ -30,13 +30,13 @@ function StatusBadge({ status }: { status: Transfer["status"] }) {
   switch (status) {
     case "RECEIVED":
       return (
-        <Badge className="bg-emerald-600 hover:bg-emerald-700 rounded-[6px]">
+        <Badge className="bg-emerald-600 hover:bg-emerald-700 rounded-[6px] text-white">
           Received
         </Badge>
       );
     case "DISPATCHED":
       return (
-        <Badge variant="secondary" className="rounded-[6px]">
+        <Badge className="bg-blue-500 hover:bg-blue-600 rounded-[6px] text-white">
           In transit
         </Badge>
       );

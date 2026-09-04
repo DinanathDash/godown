@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCreateTransfer } from "../api/transfers";
@@ -11,6 +11,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
 import { useLocations, useItems, useBatches } from "../api/transfers";
@@ -39,12 +46,14 @@ export function CreateTransferDialog() {
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
     watch,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
+    mode: "onChange",
   });
 
   // eslint-disable-next-line react-hooks/incompatible-library
@@ -87,19 +96,28 @@ export function CreateTransferDialog() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Item</label>
-            <select
-              {...register("itemId")}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <option value="">Select Item</option>
-              {itemsData?.map(
-                (item: { id: string; name: string; sku: string }) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name} ({item.sku})
-                  </option>
-                ),
+            <Controller
+              control={control}
+              name="itemId"
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger
+                    className={`w-full ${errors.itemId ? "border-red-500" : ""}`}
+                  >
+                    <SelectValue placeholder="Select Item" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {itemsData?.map(
+                      (item: { id: string; name: string }) => (
+                        <SelectItem key={item.id} value={item.id}>
+                          {item.name}
+                        </SelectItem>
+                      ),
+                    )}
+                  </SelectContent>
+                </Select>
               )}
-            </select>
+            />
             {errors.itemId && (
               <p className="text-xs text-red-500">{errors.itemId.message}</p>
             )}
@@ -107,19 +125,28 @@ export function CreateTransferDialog() {
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Batch</label>
-            <select
-              {...register("batchId")}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <option value="">Select Batch</option>
-              {availableBatches.map(
-                (batch: { id: string; code: string; itemId: string }) => (
-                  <option key={batch.id} value={batch.id}>
-                    {batch.code}
-                  </option>
-                ),
+            <Controller
+              control={control}
+              name="batchId"
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger
+                    className={`w-full ${errors.batchId ? "border-red-500" : ""}`}
+                  >
+                    <SelectValue placeholder="Select Batch" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableBatches.map(
+                      (batch: { id: string; code: string; itemId: string }) => (
+                        <SelectItem key={batch.id} value={batch.id}>
+                          {batch.code}
+                        </SelectItem>
+                      ),
+                    )}
+                  </SelectContent>
+                </Select>
               )}
-            </select>
+            />
             {errors.batchId && (
               <p className="text-xs text-red-500">{errors.batchId.message}</p>
             )}
@@ -128,19 +155,28 @@ export function CreateTransferDialog() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">From</label>
-              <select
-                {...register("sourceLocationId")}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="">Source</option>
-                {locationsData?.map(
-                  (loc: { id: string; name: string; code: string }) => (
-                    <option key={loc.id} value={loc.id}>
-                      {loc.code}
-                    </option>
-                  ),
+              <Controller
+                control={control}
+                name="sourceLocationId"
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger
+                      className={`w-full ${errors.sourceLocationId ? "border-red-500" : ""}`}
+                    >
+                      <SelectValue placeholder="Source" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {locationsData?.map(
+                        (loc: { id: string; name: string }) => (
+                          <SelectItem key={loc.id} value={loc.id}>
+                            {loc.name}
+                          </SelectItem>
+                        ),
+                      )}
+                    </SelectContent>
+                  </Select>
                 )}
-              </select>
+              />
               {errors.sourceLocationId && (
                 <p className="text-xs text-red-500">
                   {errors.sourceLocationId.message}
@@ -150,19 +186,28 @@ export function CreateTransferDialog() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">To</label>
-              <select
-                {...register("destinationLocationId")}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="">Destination</option>
-                {locationsData?.map(
-                  (loc: { id: string; name: string; code: string }) => (
-                    <option key={loc.id} value={loc.id}>
-                      {loc.code}
-                    </option>
-                  ),
+              <Controller
+                control={control}
+                name="destinationLocationId"
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger
+                      className={`w-full ${errors.destinationLocationId ? "border-red-500" : ""}`}
+                    >
+                      <SelectValue placeholder="Destination" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {locationsData?.map(
+                        (loc: { id: string; name: string }) => (
+                          <SelectItem key={loc.id} value={loc.id}>
+                            {loc.name}
+                          </SelectItem>
+                        ),
+                      )}
+                    </SelectContent>
+                  </Select>
                 )}
-              </select>
+              />
               {errors.destinationLocationId && (
                 <p className="text-xs text-red-500">
                   {errors.destinationLocationId.message}
@@ -187,7 +232,7 @@ export function CreateTransferDialog() {
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={createMutation.isPending}>
+            <Button type="submit" disabled={createMutation.isPending || !isValid}>
               {createMutation.isPending ? "Requesting..." : "Request Transfer"}
             </Button>
           </div>

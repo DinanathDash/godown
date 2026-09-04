@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -16,6 +16,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
 
 const schema = z.object({
@@ -45,9 +52,10 @@ export function CreateOrderDialog() {
     control,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
+    mode: "onChange",
     defaultValues: {
       lines: [{ itemId: "", quantity: 1 as unknown as number }],
     },
@@ -91,19 +99,28 @@ export function CreateOrderDialog() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Customer</label>
-              <select
-                {...register("customerId")}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="">Select Customer</option>
-                {customersData?.map(
-                  (customer: { id: string; name: string }) => (
-                    <option key={customer.id} value={customer.id}>
-                      {customer.name}
-                    </option>
-                  ),
+              <Controller
+                control={control}
+                name="customerId"
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger
+                      className={`w-full ${errors.customerId ? "border-red-500" : ""}`}
+                    >
+                      <SelectValue placeholder="Select Customer" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {customersData?.map(
+                        (customer: { id: string; name: string }) => (
+                          <SelectItem key={customer.id} value={customer.id}>
+                            {customer.name}
+                          </SelectItem>
+                        ),
+                      )}
+                    </SelectContent>
+                  </Select>
                 )}
-              </select>
+              />
               {errors.customerId && (
                 <p className="text-xs text-red-500">
                   {errors.customerId.message}
@@ -115,19 +132,28 @@ export function CreateOrderDialog() {
               <label className="text-sm font-medium">
                 Fulfillment Location
               </label>
-              <select
-                {...register("locationId")}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="">Select Location</option>
-                {locationsData?.map(
-                  (loc: { id: string; name: string; code: string }) => (
-                    <option key={loc.id} value={loc.id}>
-                      {loc.code}
-                    </option>
-                  ),
+              <Controller
+                control={control}
+                name="locationId"
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger
+                      className={`w-full ${errors.locationId ? "border-red-500" : ""}`}
+                    >
+                      <SelectValue placeholder="Select Location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {locationsData?.map(
+                        (loc: { id: string; name: string }) => (
+                          <SelectItem key={loc.id} value={loc.id}>
+                            {loc.name}
+                          </SelectItem>
+                        ),
+                      )}
+                    </SelectContent>
+                  </Select>
                 )}
-              </select>
+              />
               {errors.locationId && (
                 <p className="text-xs text-red-500">
                   {errors.locationId.message}
@@ -161,19 +187,28 @@ export function CreateOrderDialog() {
               {fields.map((field, index) => (
                 <div key={field.id} className="flex gap-2 items-start">
                   <div className="flex-1">
-                    <select
-                      {...register(`lines.${index}.itemId` as const)}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <option value="">Select Item</option>
-                      {itemsData?.map(
-                        (item: { id: string; name: string; sku: string }) => (
-                          <option key={item.id} value={item.id}>
-                            {item.name} ({item.sku})
-                          </option>
-                        ),
+                    <Controller
+                      control={control}
+                      name={`lines.${index}.itemId` as const}
+                      render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <SelectTrigger
+                            className={`w-full ${errors.lines?.[index]?.itemId ? "border-red-500" : ""}`}
+                          >
+                            <SelectValue placeholder="Select Item" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {itemsData?.map(
+                              (item: { id: string; name: string }) => (
+                                <SelectItem key={item.id} value={item.id}>
+                                  {item.name}
+                                </SelectItem>
+                              ),
+                            )}
+                          </SelectContent>
+                        </Select>
                       )}
-                    </select>
+                    />
                     {errors.lines?.[index]?.itemId && (
                       <p className="text-xs text-red-500">
                         {errors.lines[index]?.itemId?.message}
@@ -207,7 +242,7 @@ export function CreateOrderDialog() {
           </div>
 
           <div className="flex justify-end pt-4">
-            <Button type="submit" disabled={createMutation.isPending}>
+            <Button type="submit" disabled={createMutation.isPending || !isValid}>
               {createMutation.isPending ? "Creating..." : "Create Order"}
             </Button>
           </div>

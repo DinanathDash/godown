@@ -2,6 +2,8 @@ import { prisma } from '../../lib/prisma';
 import { AppError } from '../../utils/AppError';
 import { Prisma, WorkOrderStatus } from '@prisma/client';
 
+const TX_OPTIONS = { timeout: 20000, maxWait: 15000 } as const;
+
 export async function getWorkOrders(query: {
   page: number;
   limit: number;
@@ -79,7 +81,7 @@ export async function createWorkOrder(data: {
         status: 'ASSIGNED',
       },
     });
-  });
+  }, TX_OPTIONS);
 }
 
 export async function getWorkOrderById(id: string) {
@@ -135,5 +137,5 @@ export async function updateWorkOrderStatus(id: string, newStatus: WorkOrderStat
         assignedTo: { select: { id: true, name: true, email: true } },
       },
     });
-  });
+  }, TX_OPTIONS);
 }

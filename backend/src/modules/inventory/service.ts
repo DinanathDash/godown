@@ -2,6 +2,8 @@ import { prisma } from '../../lib/prisma';
 import { AppError } from '../../utils/AppError';
 import { Prisma } from '@prisma/client';
 
+const TX_OPTIONS = { timeout: 20000, maxWait: 15000 } as const;
+
 export const getInventory = async (filters: {
   locationId?: string;
   itemId?: string;
@@ -114,5 +116,5 @@ export const adjustStock = async (
     });
 
     return updated;
-  });
+  }, TX_OPTIONS);
 };

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -16,6 +16,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Plus } from "lucide-react";
 
 const schema = z.object({
@@ -36,11 +43,13 @@ export function CreateWorkOrderDialog() {
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
+    mode: "onChange",
   });
 
   const onSubmit = async (data: FormValues) => {
@@ -80,19 +89,28 @@ export function CreateWorkOrderDialog() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Location</label>
-            <select
-              {...register("locationId")}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <option value="">Select Location</option>
-              {locationsData?.map(
-                (loc: { id: string; name: string; code: string }) => (
-                  <option key={loc.id} value={loc.id}>
-                    {loc.code}
-                  </option>
-                ),
+            <Controller
+              control={control}
+              name="locationId"
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger
+                    className={`w-full ${errors.locationId ? "border-red-500" : ""}`}
+                  >
+                    <SelectValue placeholder="Select Location" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {locationsData?.map(
+                      (loc: { id: string; name: string }) => (
+                        <SelectItem key={loc.id} value={loc.id}>
+                          {loc.name}
+                        </SelectItem>
+                      ),
+                    )}
+                  </SelectContent>
+                </Select>
               )}
-            </select>
+            />
             {errors.locationId && (
               <p className="text-xs text-red-500">
                 {errors.locationId.message}
@@ -102,19 +120,28 @@ export function CreateWorkOrderDialog() {
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Item</label>
-            <select
-              {...register("itemId")}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <option value="">Select Item</option>
-              {itemsData?.map(
-                (item: { id: string; name: string; sku: string }) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name} ({item.sku})
-                  </option>
-                ),
+            <Controller
+              control={control}
+              name="itemId"
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger
+                    className={`w-full ${errors.itemId ? "border-red-500" : ""}`}
+                  >
+                    <SelectValue placeholder="Select Item" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {itemsData?.map(
+                      (item: { id: string; name: string }) => (
+                        <SelectItem key={item.id} value={item.id}>
+                          {item.name}
+                        </SelectItem>
+                      ),
+                    )}
+                  </SelectContent>
+                </Select>
               )}
-            </select>
+            />
             {errors.itemId && (
               <p className="text-xs text-red-500">{errors.itemId.message}</p>
             )}
@@ -137,17 +164,26 @@ export function CreateWorkOrderDialog() {
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Assign To</label>
-            <select
-              {...register("assignedToId")}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <option value="">Select Assignee</option>
-              {displayUsers.map((user: { id: string; name: string }) => (
-                <option key={user.id} value={user.id}>
-                  {user.name}
-                </option>
-              ))}
-            </select>
+            <Controller
+              control={control}
+              name="assignedToId"
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger
+                    className={`w-full ${errors.assignedToId ? "border-red-500" : ""}`}
+                  >
+                    <SelectValue placeholder="Select Assignee" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {displayUsers.map((user: { id: string; name: string }) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
             {errors.assignedToId && (
               <p className="text-xs text-red-500">
                 {errors.assignedToId.message}
@@ -156,7 +192,7 @@ export function CreateWorkOrderDialog() {
           </div>
 
           <div className="flex justify-end pt-4">
-            <Button type="submit" disabled={createMutation.isPending}>
+            <Button type="submit" disabled={createMutation.isPending || !isValid}>
               {createMutation.isPending ? "Creating..." : "Create"}
             </Button>
           </div>

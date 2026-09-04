@@ -180,13 +180,17 @@ export function InventoryTable() {
           onValueChange={onFilterChange(setLocationId)}
         >
           <SelectTrigger className={`w-[170px] ${CONTROL}`}>
-            <SelectValue placeholder="Location" />
+            <SelectValue placeholder="Location">
+              {locationId === "ALL" 
+                ? "All godowns" 
+                : locations?.find(l => l.id === locationId)?.name || "Location"}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent className="rounded-[10px]">
             <SelectItem value="ALL">All godowns</SelectItem>
             {locations?.map((l) => (
               <SelectItem key={l.id} value={l.id}>
-                {l.code} — {l.name}
+                {l.name}
               </SelectItem>
             ))}
           </SelectContent>
@@ -197,7 +201,11 @@ export function InventoryTable() {
           onValueChange={onFilterChange(setCategoryId)}
         >
           <SelectTrigger className={`w-[160px] ${CONTROL}`}>
-            <SelectValue placeholder="Category" />
+            <SelectValue placeholder="Category">
+              {categoryId === "ALL"
+                ? "All categories"
+                : categories?.find(c => c.id === categoryId)?.name || "Category"}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent className="rounded-[10px]">
             <SelectItem value="ALL">All categories</SelectItem>
