@@ -14,12 +14,7 @@ import bcrypt from 'bcrypt';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import {
-  generatePlan,
-  assertPlanIsConsistent,
-  SEED,
-  type Catalog,
-} from './seed/generate';
+import { generatePlan, assertPlanIsConsistent, SEED, type Catalog } from './seed/generate';
 
 const prisma = new PrismaClient();
 const DEFAULT_PASSWORD = 'Password@123';
@@ -61,10 +56,7 @@ async function reset() {
 
 /** A bare `npm run seed` must not write into a populated database. */
 async function alreadySeeded(): Promise<boolean> {
-  const [items, inventory] = await Promise.all([
-    prisma.item.count(),
-    prisma.inventoryItem.count(),
-  ]);
+  const [items, inventory] = await Promise.all([prisma.item.count(), prisma.inventoryItem.count()]);
   return items > 0 || inventory > 0;
 }
 

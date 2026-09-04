@@ -68,23 +68,25 @@ export function TransfersTable() {
     action: "DISPATCH" | "RECEIVE" | "CANCEL",
     transfer: Transfer,
   ) => {
-    const done: Record<typeof action, { title: string; description: string }> = {
-      DISPATCH: {
-        title: "Transfer dispatched",
-        description: `Stock has left ${transfer.source.code} and is in transit.`,
-      },
-      RECEIVE: {
-        title: "Transfer received",
-        description: `Stock is now on hand at ${transfer.destination.code}.`,
-      },
-      CANCEL: {
-        title: "Transfer cancelled",
-        description: `${transfer.code} will not be dispatched.`,
-      },
-    };
+    const done: Record<typeof action, { title: string; description: string }> =
+      {
+        DISPATCH: {
+          title: "Transfer dispatched",
+          description: `Stock has left ${transfer.source.code} and is in transit.`,
+        },
+        RECEIVE: {
+          title: "Transfer received",
+          description: `Stock is now on hand at ${transfer.destination.code}.`,
+        },
+        CANCEL: {
+          title: "Transfer cancelled",
+          description: `${transfer.code} will not be dispatched.`,
+        },
+      };
 
     try {
-      if (action === "DISPATCH") await dispatchMutation.mutateAsync(transfer.id);
+      if (action === "DISPATCH")
+        await dispatchMutation.mutateAsync(transfer.id);
       if (action === "RECEIVE") await receiveMutation.mutateAsync(transfer.id);
       if (action === "CANCEL") await cancelMutation.mutateAsync(transfer.id);
       toast.add(done[action]);
@@ -115,19 +117,35 @@ export function TransfersTable() {
               <TableHead className={HEAD}>Route</TableHead>
               <TableHead className={`${HEAD} text-right`}>Quantity</TableHead>
               <TableHead className={HEAD}>Status</TableHead>
-              <TableHead className={`${HEAD} text-right pr-5`}>Actions</TableHead>
+              <TableHead className={`${HEAD} text-right pr-5`}>
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {Array.from({ length: 5 }).map((_, i) => (
               <TableRow key={i} className="border-b-[0.5px] border-border/50">
-                <TableCell className="pl-5"><Skeleton className="h-4 w-28" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-10 ml-auto" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-20 rounded-[6px]" /></TableCell>
-                <TableCell className="pr-5"><Skeleton className="h-8 w-24 ml-auto rounded-[10px]" /></TableCell>
+                <TableCell className="pl-5">
+                  <Skeleton className="h-4 w-28" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-40" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-20" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-32" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-10 ml-auto" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5 w-20 rounded-[6px]" />
+                </TableCell>
+                <TableCell className="pr-5">
+                  <Skeleton className="h-8 w-24 ml-auto rounded-[10px]" />
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

@@ -30,10 +30,7 @@ describe('Inventory adjustment', () => {
   });
 
   const adjust = (body: object, tk = token) =>
-    request(app)
-      .post('/api/inventory/adjust')
-      .set('Authorization', `Bearer ${tk}`)
-      .send(body);
+    request(app).post('/api/inventory/adjust').set('Authorization', `Bearer ${tk}`).send(body);
 
   it('adds stock and records a ledger entry with the new balance', async () => {
     const res = await adjust({

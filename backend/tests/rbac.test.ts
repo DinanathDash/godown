@@ -8,12 +8,13 @@ import {
   createTestInventory,
   createTestCustomer,
 } from './testUtils';
-import { prisma } from '../src/lib/prisma';
+
 
 describe('5. RBAC API Tests', () => {
   let salesToken: string;
   let opsToken: string;
   let adminToken: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let loc: any, item: any, customer: any, orderId: string;
 
   beforeAll(async () => {

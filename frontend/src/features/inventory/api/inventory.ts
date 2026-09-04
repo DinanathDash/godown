@@ -64,9 +64,9 @@ export const useCategories = () =>
     queryKey: ["categories"],
     staleTime: 5 * 60 * 1000,
     queryFn: async () => {
-      const { data } = await apiClient.get<{ data: { id: string; name: string }[] }>(
-        "/categories",
-      );
+      const { data } = await apiClient.get<{
+        data: { id: string; name: string }[];
+      }>("/categories");
       return data.data;
     },
   });

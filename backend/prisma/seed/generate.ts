@@ -299,9 +299,7 @@ export function generatePlan(catalog: Catalog): SeedPlan {
     const candidates = inventory.filter((i) => balances.get(i.key)! > 40);
     if (!candidates.length) break;
     const source = rng.pick(candidates);
-    const destination = rng.pick(
-      locationCodes.filter((c) => c !== source.locationCode),
-    );
+    const destination = rng.pick(locationCodes.filter((c) => c !== source.locationCode));
     const quantity = Math.max(5, Math.round(balances.get(source.key)! * 0.15));
     const code = `TRF-2026-${rng.code()}`;
     const requestedDay = rng.int(-VOLUME.daysOfHistory, -10);
@@ -399,10 +397,7 @@ export function generatePlan(catalog: Catalog): SeedPlan {
 
     for (const sku of rng.sample(stockedSkus, rng.int(1, 3))) {
       const rows = keysFor(sku, locationCode);
-      const available = rows.reduce(
-        (sum, r) => sum + (balances.get(r.key)! - r.reservedQty),
-        0,
-      );
+      const available = rows.reduce((sum, r) => sum + (balances.get(r.key)! - r.reservedQty), 0);
       if (available < 2) continue;
 
       // Keep orders comfortably inside available stock — the concurrency tests
@@ -541,16 +536,16 @@ export function assertPlanIsConsistent(plan: SeedPlan): void {
     }
     // 3. The rule the whole app defends: never reserve more than exists.
     if (row.reservedQty > row.physicalQty) {
-      problems.push(
-        `${row.key}: reserved ${row.reservedQty} exceeds physical ${row.physicalQty}`,
-      );
+      problems.push(`${row.key}: reserved ${row.reservedQty} exceeds physical ${row.physicalQty}`);
     }
     if (row.physicalQty < 0) problems.push(`${row.key}: negative physicalQty`);
   }
 
   // 4. Reservations may only belong to RESERVED orders.
   const reservedLineKeys = new Set(
-    plan.orders.filter((o) => o.status === 'RESERVED').flatMap((o) => o.lines.map((l) => l.lineKey)),
+    plan.orders
+      .filter((o) => o.status === 'RESERVED')
+      .flatMap((o) => o.lines.map((l) => l.lineKey)),
   );
   for (const r of plan.reservations) {
     if (!reservedLineKeys.has(r.lineKey)) {

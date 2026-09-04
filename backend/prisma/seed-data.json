@@ -2,10 +2,34 @@
   "_readme": "Editable catalog for the seeder. Volume, inventory placement and the whole stock ledger are generated in seed/generate.ts; this file only holds flat, human-editable content.",
 
   "users": [
-    { "key": "admin", "email": "admin@godown.test", "name": "Aarti Deshpande", "role": "ADMIN", "locationCode": null },
-    { "key": "ops_mum", "email": "ops@godown.test", "name": "Suresh Pawar", "role": "OPERATIONS", "locationCode": "WH-MUM" },
-    { "key": "ops_pun", "email": "ops.pune@godown.test", "name": "Kavita Joshi", "role": "OPERATIONS", "locationCode": "WH-PUN" },
-    { "key": "sales", "email": "sales@godown.test", "name": "Nikhil Verma", "role": "SALES", "locationCode": null }
+    {
+      "key": "admin",
+      "email": "admin@godown.test",
+      "name": "Aarti Deshpande",
+      "role": "ADMIN",
+      "locationCode": null
+    },
+    {
+      "key": "ops_mum",
+      "email": "ops@godown.test",
+      "name": "Suresh Pawar",
+      "role": "OPERATIONS",
+      "locationCode": "WH-MUM"
+    },
+    {
+      "key": "ops_pun",
+      "email": "ops.pune@godown.test",
+      "name": "Kavita Joshi",
+      "role": "OPERATIONS",
+      "locationCode": "WH-PUN"
+    },
+    {
+      "key": "sales",
+      "email": "sales@godown.test",
+      "name": "Nikhil Verma",
+      "role": "SALES",
+      "locationCode": null
+    }
   ],
 
   "locations": [
@@ -25,7 +49,12 @@
     { "sku": "FS-1006", "name": "Wood Screw 3 inch", "category": "Fasteners", "uom": "BOX" },
 
     { "sku": "HT-2001", "name": "Claw Hammer 500g", "category": "Hand Tools", "uom": "NOS" },
-    { "sku": "HT-2002", "name": "Adjustable Wrench 10 inch", "category": "Hand Tools", "uom": "NOS" },
+    {
+      "sku": "HT-2002",
+      "name": "Adjustable Wrench 10 inch",
+      "category": "Hand Tools",
+      "uom": "NOS"
+    },
     { "sku": "HT-2003", "name": "Screwdriver Set 6pc", "category": "Hand Tools", "uom": "SET" },
     { "sku": "HT-2004", "name": "Measuring Tape 5m", "category": "Hand Tools", "uom": "NOS" },
     { "sku": "HT-2005", "name": "Plier Set 3pc", "category": "Hand Tools", "uom": "SET" },
@@ -40,7 +69,12 @@
     { "sku": "PL-4004", "name": "Gate Valve 2 inch", "category": "Plumbing", "uom": "NOS" },
     { "sku": "PL-4005", "name": "Teflon Tape 12mm", "category": "Plumbing", "uom": "ROLL" },
 
-    { "sku": "EL-5001", "name": "Copper Wire 2.5sqmm (90m)", "category": "Electrical", "uom": "COIL" },
+    {
+      "sku": "EL-5001",
+      "name": "Copper Wire 2.5sqmm (90m)",
+      "category": "Electrical",
+      "uom": "COIL"
+    },
     { "sku": "EL-5002", "name": "Modular Switch 6A", "category": "Electrical", "uom": "NOS" },
     { "sku": "EL-5003", "name": "MCB 16A Single Pole", "category": "Electrical", "uom": "NOS" },
     { "sku": "EL-5004", "name": "LED Bulb 9W", "category": "Electrical", "uom": "NOS" },
@@ -52,20 +86,74 @@
   ],
 
   "customers": [
-    { "name": "Rakesh Sharma", "businessName": "Rakesh Traders", "mobile": "9876543210", "email": "rakesh@rakeshtraders.in" },
-    { "name": "Priya Nair", "businessName": "BuildWell Corp", "mobile": "9876543211", "email": "priya@buildwell.co.in" },
-    { "name": "Imran Qureshi", "businessName": "City Hardware Mart", "mobile": "9876543212", "email": "imran@cityhardware.in" },
-    { "name": "Sunita Rao", "businessName": "Rao Constructions", "mobile": "9876543213", "email": "sunita@raoconstruct.in" },
-    { "name": "Vikram Singh", "businessName": "Singh Industrial Supplies", "mobile": "9876543214", "email": "vikram@singhsupplies.in" },
-    { "name": "Anjali Mehta", "businessName": "Mehta Interiors", "mobile": "9876543215", "email": "anjali@mehtainteriors.in" },
-    { "name": "Deepak Kulkarni", "businessName": "Kulkarni Plumbing Works", "mobile": "9876543216", "email": "deepak@kulkarniplumb.in" },
-    { "name": "Fatima Sheikh", "businessName": "Sheikh Electricals", "mobile": "9876543217", "email": "fatima@sheikhelec.in" },
-    { "name": "Arjun Reddy", "businessName": "Reddy Builders", "mobile": "9876543218", "email": "arjun@reddybuilders.in" },
-    { "name": "Meenakshi Pillai", "businessName": "Pillai Hardware Centre", "mobile": "9876543219", "email": "meena@pillaihardware.in" }
+    {
+      "name": "Rakesh Sharma",
+      "businessName": "Rakesh Traders",
+      "mobile": "9876543210",
+      "email": "rakesh@rakeshtraders.in"
+    },
+    {
+      "name": "Priya Nair",
+      "businessName": "BuildWell Corp",
+      "mobile": "9876543211",
+      "email": "priya@buildwell.co.in"
+    },
+    {
+      "name": "Imran Qureshi",
+      "businessName": "City Hardware Mart",
+      "mobile": "9876543212",
+      "email": "imran@cityhardware.in"
+    },
+    {
+      "name": "Sunita Rao",
+      "businessName": "Rao Constructions",
+      "mobile": "9876543213",
+      "email": "sunita@raoconstruct.in"
+    },
+    {
+      "name": "Vikram Singh",
+      "businessName": "Singh Industrial Supplies",
+      "mobile": "9876543214",
+      "email": "vikram@singhsupplies.in"
+    },
+    {
+      "name": "Anjali Mehta",
+      "businessName": "Mehta Interiors",
+      "mobile": "9876543215",
+      "email": "anjali@mehtainteriors.in"
+    },
+    {
+      "name": "Deepak Kulkarni",
+      "businessName": "Kulkarni Plumbing Works",
+      "mobile": "9876543216",
+      "email": "deepak@kulkarniplumb.in"
+    },
+    {
+      "name": "Fatima Sheikh",
+      "businessName": "Sheikh Electricals",
+      "mobile": "9876543217",
+      "email": "fatima@sheikhelec.in"
+    },
+    {
+      "name": "Arjun Reddy",
+      "businessName": "Reddy Builders",
+      "mobile": "9876543218",
+      "email": "arjun@reddybuilders.in"
+    },
+    {
+      "name": "Meenakshi Pillai",
+      "businessName": "Pillai Hardware Centre",
+      "mobile": "9876543219",
+      "email": "meena@pillaihardware.in"
+    }
   ],
 
   "adjustmentReasons": {
-    "IN": ["Purchase order received", "Customer return to stock", "Stock count correction (excess found)"],
+    "IN": [
+      "Purchase order received",
+      "Customer return to stock",
+      "Stock count correction (excess found)"
+    ],
     "OUT": ["Damaged in storage", "Sample issued", "Stock count correction (shortage)"]
   }
 }

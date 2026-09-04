@@ -73,11 +73,13 @@ export function CreateTransferDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" /> Request Transfer
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger
+        render={
+          <Button>
+            <Plus className="mr-2 h-4 w-4" /> Request Transfer
+          </Button>
+        }
+      />
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Request Transfer</DialogTitle>

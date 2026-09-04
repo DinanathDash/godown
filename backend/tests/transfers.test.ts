@@ -6,6 +6,7 @@ import { prisma } from '../src/lib/prisma';
 
 describe('Internal Stock Transfers API', () => {
   let token: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let locA: any, locB: any, item: any, invA: any;
 
   beforeAll(async () => {

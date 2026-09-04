@@ -65,11 +65,13 @@ export function CreateWorkOrderDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" /> Create Work Order
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger
+        render={
+          <Button>
+            <Plus className="mr-2 h-4 w-4" /> Create Work Order
+          </Button>
+        }
+      />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create Work Order</DialogTitle>

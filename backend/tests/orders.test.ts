@@ -13,7 +13,8 @@ import { reserveOrder } from '../src/modules/orders/service';
 
 describe('Customer Orders API & Concurrency', () => {
   let token: string;
-  let loc: any, item: any, customer: any, user: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let loc: any, item: any, customer: any;
 
   beforeAll(async () => {
     token = await getAuthToken('ADMIN');
@@ -21,8 +22,7 @@ describe('Customer Orders API & Concurrency', () => {
     item = await createTestItem('Order Item', 'ORD-ITEM-1');
     customer = await createTestCustomer();
 
-    const meRes = await request(app).get('/api/auth/me').set('Authorization', `Bearer ${token}`);
-    user = meRes.body;
+    await request(app).get('/api/auth/me').set('Authorization', `Bearer ${token}`);
   });
 
   it('1. Cannot reserve more than available', async () => {

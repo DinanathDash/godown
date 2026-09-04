@@ -131,21 +131,41 @@ export function WorkOrdersTable() {
               <TableHead className={`${HEAD} text-right`}>Shortage</TableHead>
               <TableHead className={HEAD}>Assignee</TableHead>
               <TableHead className={HEAD}>Status</TableHead>
-              <TableHead className={`${HEAD} text-right pr-5`}>Actions</TableHead>
+              <TableHead className={`${HEAD} text-right pr-5`}>
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {Array.from({ length: 5 }).map((_, i) => (
               <TableRow key={i} className="border-b-[0.5px] border-border/50">
-                <TableCell className="pl-5"><Skeleton className="h-4 w-28" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-10 ml-auto" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-10 ml-auto" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-10 ml-auto" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-20 rounded-[6px]" /></TableCell>
-                <TableCell className="pr-5"><Skeleton className="h-8 w-20 ml-auto rounded-[10px]" /></TableCell>
+                <TableCell className="pl-5">
+                  <Skeleton className="h-4 w-28" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-16" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-40" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-10 ml-auto" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-10 ml-auto" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-10 ml-auto" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-24" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5 w-20 rounded-[6px]" />
+                </TableCell>
+                <TableCell className="pr-5">
+                  <Skeleton className="h-8 w-20 ml-auto rounded-[10px]" />
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -183,7 +203,9 @@ export function WorkOrdersTable() {
               <TableHead className={`${HEAD} text-right`}>Shortage</TableHead>
               <TableHead className={HEAD}>Assignee</TableHead>
               <TableHead className={HEAD}>Status</TableHead>
-              <TableHead className={`${HEAD} text-right pr-5`}>Actions</TableHead>
+              <TableHead className={`${HEAD} text-right pr-5`}>
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -239,7 +261,9 @@ export function WorkOrdersTable() {
                       {canOperate && wo.status === "ASSIGNED" && (
                         <Button
                           variant="outline"
-                          onClick={() => setPending({ wo, status: "IN_PROGRESS" })}
+                          onClick={() =>
+                            setPending({ wo, status: "IN_PROGRESS" })
+                          }
                           className="rounded-[10px] h-8 text-[12px] shadow-sm border-[0.5px] border-border/50"
                         >
                           Start
@@ -247,7 +271,9 @@ export function WorkOrdersTable() {
                       )}
                       {canOperate && wo.status === "IN_PROGRESS" && (
                         <Button
-                          onClick={() => setPending({ wo, status: "COMPLETED" })}
+                          onClick={() =>
+                            setPending({ wo, status: "COMPLETED" })
+                          }
                           className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-[10px] h-8 text-[12px] shadow-sm"
                         >
                           Complete

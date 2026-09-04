@@ -75,11 +75,13 @@ export function CreateOrderDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" /> Create Order
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger
+        render={
+          <Button>
+            <Plus className="mr-2 h-4 w-4" /> Create Order
+          </Button>
+        }
+      />
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Create Customer Order</DialogTitle>

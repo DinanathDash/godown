@@ -354,50 +354,52 @@ export function InventoryTable() {
                         >
                           Adjust
                         </DialogTrigger>
-                        <DialogContent className="rounded-2xl">
+                        <DialogContent className="rounded-2xl sm:max-w-[425px]">
                           <DialogHeader>
                             <DialogTitle>
                               Adjust stock — {item.item.sku}
                             </DialogTitle>
                           </DialogHeader>
                           <div className="space-y-4 py-2">
-                            <div className="space-y-2">
-                              <Label>Type</Label>
-                              <Select
-                                value={adjustType}
-                                onValueChange={(v) =>
-                                  setAdjustType(v as "IN" | "OUT")
-                                }
-                              >
-                                <SelectTrigger className={CONTROL}>
-                                  <SelectValue placeholder="Select type" />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-[10px]">
-                                  <SelectItem value="IN">
-                                    IN — add stock
-                                  </SelectItem>
-                                  <SelectItem value="OUT">
-                                    OUT — remove stock
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="space-y-2">
-                              <Label>
-                                Quantity
-                                <span className="ml-2 font-normal text-muted-foreground tabular-nums">
-                                  {item.availableQty} available
-                                </span>
-                              </Label>
-                              <Input
-                                type="number"
-                                min="1"
-                                className={CONTROL}
-                                value={quantity}
-                                onChange={(e) =>
-                                  setQuantity(Number(e.target.value))
-                                }
-                              />
+                            <div className="flex gap-4">
+                              <div className="space-y-2 flex-1">
+                                <Label>Type</Label>
+                                <Select
+                                  value={adjustType}
+                                  onValueChange={(v) =>
+                                    setAdjustType(v as "IN" | "OUT")
+                                  }
+                                >
+                                  <SelectTrigger className={`w-full ${CONTROL}`}>
+                                    <SelectValue placeholder="Select type" />
+                                  </SelectTrigger>
+                                  <SelectContent className="rounded-[10px]">
+                                    <SelectItem value="IN">
+                                      IN
+                                    </SelectItem>
+                                    <SelectItem value="OUT">
+                                      OUT
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="space-y-2 flex-1">
+                                <Label className="flex items-center justify-between">
+                                  <span>Quantity</span>
+                                  <span className="font-normal text-muted-foreground tabular-nums">
+                                    {item.availableQty} available
+                                  </span>
+                                </Label>
+                                <Input
+                                  type="number"
+                                  min="1"
+                                  className={`w-full ${CONTROL}`}
+                                  value={quantity}
+                                  onChange={(e) =>
+                                    setQuantity(Number(e.target.value))
+                                  }
+                                />
+                              </div>
                             </div>
                             <div className="space-y-2">
                               <Label>Reason</Label>
